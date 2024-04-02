@@ -30,9 +30,15 @@ export class SketchPad {
 
     this.ctx = this.canvas.getContext("2d")!;
 
-    this.#redraw();
+    this.reset();
 
     this.#addEventListeners();
+  }
+
+  reset() {
+    this.paths = [];
+    this.isDrawing = false;
+    this.#redraw();
   }
 
   #addEventListeners() {
