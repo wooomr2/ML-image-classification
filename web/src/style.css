@@ -1,0 +1,10 @@
+body {
+  background-color: hsl(221.2 83.2% 53.3%);
+}
+
+#content {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
