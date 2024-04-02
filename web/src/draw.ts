@@ -21,11 +21,7 @@ export class Draw {
     ctx.stroke();
   }
 
-  static paths(
-    ctx: CanvasRenderingContext2D,
-    paths: Point[][],
-    color = "black"
-  ) {
+  static paths(ctx: CanvasRenderingContext2D, paths: Point[][], color = "black") {
     for (const path of paths) {
       Draw.path(ctx, path, color);
     }
