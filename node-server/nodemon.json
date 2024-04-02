@@ -1,0 +1,9 @@
+{
+  "watch": ["./src"],
+  "exec": "cross-env DEBUG=* node -r ts-node/register ./src/bin/www.ts",
+  "ignore": ["./public", "./sessions"],
+  "delay": 1,
+  "ext": "ts, tsx, js, jsx, json, yaml",
+  "inspect": true,
+  "verbose": true
+}
