@@ -1,6 +1,5 @@
-import express, { Request, Response, NextFunction } from 'express'
+import express, { NextFunction, Request, Response } from 'express'
 import { asyncRouter } from '../middlewares/asyncWrapper'
-
 const router = asyncRouter(express.Router())
 
 router.get('/', (req: Request, res: Response, next: NextFunction) => {
