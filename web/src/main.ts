@@ -54,7 +54,7 @@ function next() {
   if (index < labels.length) {
     instructions.innerHTML = `Please draw a ${labels[index]}`;
   } else {
-    sketchPadContainer.style.display = "hidden";
+    sketchPadContainer.style.visibility = "hidden";
     instructions.innerHTML = "Thank you for participating!";
     advanceBtn.innerHTML = "SAVE";
 
