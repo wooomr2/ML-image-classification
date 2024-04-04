@@ -1,6 +1,6 @@
 {
   "name": "image_classification_server",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "description": "",
   "private": true,
   "scripts": {
@@ -32,7 +32,6 @@
     "eslint-config-prettier": "^9.1.0",
     "nodemon": "^3.1.0",
     "prettier": "^3.2.5",
-    "save": "^2.9.0",
     "ts-node": "^10.9.2",
     "tslib": "^2.6.2",
     "typescript": "^5.4.3",
