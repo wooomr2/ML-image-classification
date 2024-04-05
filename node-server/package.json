@@ -8,6 +8,7 @@
     "format": "prettier --write \"src/**/*.ts\"",
     "lint": "eslint \"src/**/*.ts\" --fix",
     "start:local": "nodemon",
+    "start:dist": "node ./dist/bin/www.js",
     "start:dev": "cross-env NODE_ENV=development pm2 start ecosystem.config.js",
     "start:prd": "cross-env NODE_ENV=production pm2 start ecosystem.config.js"
   },
