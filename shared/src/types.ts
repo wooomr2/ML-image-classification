@@ -1,6 +1,7 @@
 import { Point } from './primitives/point'
+import { IMAGE_LABELS } from './const'
 
-export type TLabel = 'car' | 'fish' | 'house' | 'tree' | 'bicycle' | 'guitar' | 'pencil' | 'clock'
+export type TLabel = (typeof IMAGE_LABELS)[number]
 
 export type Path = Point[]
 

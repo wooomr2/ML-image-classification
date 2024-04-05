@@ -9,3 +9,5 @@ export const FILE_PATH = {
   IMG_DIR: dataDir + '/dataset/image',
   SAMPLES: dataDir + '/dataset/samples.json',
 }
+
+export const IMAGE_LABELS = ['car', 'fish', 'house', 'tree', 'bicycle', 'guitar', 'pencil', 'clock'] as const
