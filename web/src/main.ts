@@ -1,20 +1,22 @@
-import { Point } from "./point";
+import { IMAGE_LABELS, IPreProcessedData } from "shared";
 import { SketchPad } from "./sketchPad";
 import "./style.css";
 
 let index = 0;
-const labels = ["car", "fish", "house", "tree", "bicycle", "guitar", "pencil", "clock"];
 
-interface IData {
-  student: string | null;
-  session: number;
-  drawings: Record<string, Point[][]>;
-}
-
-const data: IData = {
-  student: null,
+const data: IPreProcessedData = {
+  student: "",
   session: new Date().getTime(),
-  drawings: {},
+  drawings: {
+    car: [],
+    fish: [],
+    house: [],
+    tree: [],
+    bicycle: [],
+    guitar: [],
+    pencil: [],
+    clock: [],
+  },
 };
 
 const sketchPadContainer = document.getElementById("sketchPadContainer") as HTMLDivElement;
@@ -36,7 +38,7 @@ function start() {
   studentInput.style.display = "none";
   sketchPadContainer.style.visibility = "visible";
 
-  instructions.innerHTML = `Please draw a ${labels[index]}`;
+  instructions.innerHTML = `Please draw a ${IMAGE_LABELS[index]}`;
 
   advanceBtn.innerHTML = "NEXT";
   advanceBtn.onclick = next;
@@ -47,12 +49,12 @@ function next() {
     return alert("Please draw something");
   }
 
-  data.drawings[labels[index]] = sketchPad.paths;
+  data.drawings[IMAGE_LABELS[index]] = sketchPad.paths;
   sketchPad.reset();
 
   index++; // Move to the next label
-  if (index < labels.length) {
-    instructions.innerHTML = `Please draw a ${labels[index]}`;
+  if (index < IMAGE_LABELS.length) {
+    instructions.innerHTML = `Please draw a ${IMAGE_LABELS[index]}`;
   } else {
     sketchPadContainer.style.visibility = "hidden";
     instructions.innerHTML = "Thank you for participating!";

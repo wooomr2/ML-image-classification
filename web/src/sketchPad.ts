@@ -1,5 +1,4 @@
-import { Draw } from "./draw";
-import { Point } from "./point";
+import { Draw, Path, Point } from "shared";
 
 export class SketchPad {
   size: number;
@@ -8,7 +7,7 @@ export class SketchPad {
 
   undoBtn: HTMLButtonElement;
 
-  paths: Point[][] = [];
+  paths: Path[] = [];
   isDrawing = false;
 
   constructor(container: HTMLElement, size = 400) {
