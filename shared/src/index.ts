@@ -1,5 +1,5 @@
 export * from './canvas/draw'
-export * from './primitives/point'
-export * from './util'
 export * from './const'
+export * from './primitives/point'
 export * from './types'
+export * as Util from './utils'
