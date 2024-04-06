@@ -68,7 +68,6 @@ export default class MLCron {
           label: label,
           student_id: session,
           student_name: student,
-          paths: paths,
         })
 
         fs.writeFileSync(`${FILE_PATH.JSON_DIR}/${id}.json`, JSON.stringify(paths))

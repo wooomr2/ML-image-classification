@@ -22,5 +22,4 @@ export interface ISample {
   label: string
   student_id: number
   student_name: string
-  paths: Path[]
 }
