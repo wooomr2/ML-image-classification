@@ -1,13 +1,13 @@
-import { samples } from "@/data/samples";
-import { createRow } from "@/scripts/display";
+import { features } from "@/data/features";
+import { createRow } from "@/components/display";
 import "@/styles/style.css";
 import { ISample, Util } from "shared";
 
+const { featureNames, samples } = features;
 const groups = Util.groupBy(samples, "student_id");
 
 const container = document.getElementById("container") as HTMLDivElement;
 
-console.log(groups);
 for (const student_id in groups) {
   const samples = groups[student_id];
 

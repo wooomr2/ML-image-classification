@@ -4,10 +4,28 @@ import MLCron from '../batch/crons/ml.cron'
 
 const router = asyncRouter(express.Router())
 
-router.get('/', async (req: Request, res: Response, next: NextFunction) => {
+router.get('/run', async (req: Request, res: Response, next: NextFunction) => {
   await MLCron.run()
 
-  return res.json({ message: 'Test Route OK' })
+  return res.json({ message: 'run DONE' })
+})
+
+router.get('/preprocess', async (req: Request, res: Response, next: NextFunction) => {
+  await MLCron.preprocess_rawdata()
+
+  return res.json({ message: 'preprocess DONE' })
+})
+
+router.get('/generate-dataset', async (req: Request, res: Response, next: NextFunction) => {
+  await MLCron.generate_dataset()
+
+  return res.json({ message: 'generate-dataset DONE' })
+})
+
+router.get('/feature-extractor', async (req: Request, res: Response, next: NextFunction) => {
+  await MLCron.feature_extractor()
+
+  return res.json({ message: 'feature-extractor DONE' })
 })
 
 export default router

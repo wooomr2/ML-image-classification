@@ -6,5 +6,6 @@ export function getPathCount(paths: Path[]) {
 
 export function getPointCount(paths: Path[]) {
   const points = paths.flat()
+  
   return points.length
 }

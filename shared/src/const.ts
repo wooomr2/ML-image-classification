@@ -1,7 +1,5 @@
 const dataDir = '../data'
-const sharedDataDir = '../shared/src/data'
 const webDir = '../web'
-const webDataDir = '../web/src/data'
 
 export const FILE_PATH = {
   DATA_DIR: dataDir,
@@ -9,15 +7,14 @@ export const FILE_PATH = {
   PRE_PROCESSED_DIR: dataDir + '/pre-processed',
   DATASET_DIR: dataDir + '/dataset',
   JSON_DIR: dataDir + '/dataset/json',
-  IMG_DIR: dataDir + '/dataset/image',
-  SAMPLES: dataDir + '/dataset/samples.json',
-
-  // shared
-  SHARED_SAMPLES: sharedDataDir + '/samples.ts',
+  IMG_DIR: dataDir + '/dataset/img',
+  SAMPLES_JSON: dataDir + '/dataset/samples.json',
+  FEATURES_JSON: dataDir + '/dataset/features.json',
 
   // web
-  WEB_SAMPLES: webDataDir + '/samples.ts',
   WEB_IMG_DIR: webDir + '/public/img',
+  WEB_SAMPLES_TS: webDir + '/src/data/samples.ts',
+  WEB_FEATURES_TS: webDir + '/src/data/features.ts',
 }
 
 export const IMAGE_LABELS = ['car', 'fish', 'house', 'tree', 'bicycle', 'guitar', 'pencil', 'clock'] as const

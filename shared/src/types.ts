@@ -22,4 +22,10 @@ export interface ISample {
   label: string
   student_id: number
   student_name: string
+  point: Point
+}
+
+export interface IFeatures {
+  featureNames: string[]
+  samples: ISample[]
 }
