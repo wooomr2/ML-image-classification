@@ -1,6 +1,6 @@
 import { createCanvas } from 'canvas'
 import * as fs from 'fs'
-import { Draw, FILE_PATH, IMAGE_LABELS, IPreProcessedData, IRawData, Path, Point, TLabel } from 'shared'
+import { Draw, FILE_PATH, IMAGE_LABELS, IPreProcessedData, IRawData, ISample, Path, Point, TLabel } from 'shared'
 import { printProgress } from '../../utils/process.util'
 
 // 주의:: node-canvas의 CanvasRenderingContext2D를 DOM의 CanvasRenderingContext2D로 type-casting해서 사용중
@@ -18,7 +18,7 @@ export default class MLCron {
 
     const fileNames = fs.readdirSync(FILE_PATH.RAW_DIR)
     for (const fileName of fileNames) {
-      const content = fs.readFileSync(FILE_PATH.RAW_DIR + '/' + fileName, { encoding: 'utf-8' })
+      const content = fs.readFileSync(`${FILE_PATH.RAW_DIR}/${fileName}`, { encoding: 'utf-8' })
 
       const { session, student, drawings } = JSON.parse(content) as IRawData
 
@@ -51,21 +51,14 @@ export default class MLCron {
   static async generate_dataset() {
     console.log('STEP2 - GENERATING DATASET ...')
 
-    interface ISample {
-      id: number
-      label: string
-      student_id: number
-      student_name: string
-      paths: Path[]
-    }
-
     const samples: ISample[] = []
 
     let id = 1
     const fileNames = fs.readdirSync(FILE_PATH.PRE_PROCESSED_DIR)
 
     for (const fileName of fileNames) {
-      const content = fs.readFileSync(FILE_PATH.PRE_PROCESSED_DIR + '/' + fileName, { encoding: 'utf-8' })
+      if (id > 10 * IMAGE_LABELS.length) break
+      const content = fs.readFileSync(`${FILE_PATH.PRE_PROCESSED_DIR}/${fileName}`, { encoding: 'utf-8' })
 
       const { session, student, drawings } = JSON.parse(content) as IPreProcessedData
 
@@ -89,6 +82,8 @@ export default class MLCron {
     }
 
     fs.writeFileSync(FILE_PATH.SAMPLES, JSON.stringify(samples))
+    fs.writeFileSync(FILE_PATH.SHARED_SAMPLES, `export const samples=${JSON.stringify(samples)};`)
+    fs.writeFileSync(FILE_PATH.WEB_SAMPLES, `export const samples=${JSON.stringify(samples)};`)
 
     console.log('STEP2 - DATASET IS GENERATED.')
   }

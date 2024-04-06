@@ -1,6 +1,6 @@
+import { SketchPad } from "@/components/sketchPad";
+import "@/styles/style.css";
 import { IMAGE_LABELS, IPreProcessedData } from "shared";
-import { SketchPad } from "./sketchPad";
-import "./style.css";
 
 let index = 0;
 
