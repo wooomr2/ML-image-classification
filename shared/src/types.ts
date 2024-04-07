@@ -1,10 +1,16 @@
 import { IMAGE_LABELS } from './const'
 import { Point } from './primitives/point'
 
-export type TLabel = (typeof IMAGE_LABELS)[number]
+export interface IBoundary {
+  left: number
+  right: number
+  top: number
+  bottom: number
+}
 
 export type Path = Point[]
 
+export type TLabel = (typeof IMAGE_LABELS)[number]
 export interface IRawData {
   session: number
   student: string

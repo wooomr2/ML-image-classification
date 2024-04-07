@@ -2,7 +2,12 @@ import { ISample } from "shared";
 
 const flaggedUsers = [1663882102141, 1663900040545, 1664485938220];
 
-export function createRow(container: HTMLDivElement, studentName: string, samples: ISample[]) {
+export const createRow = (
+  container: HTMLDivElement,
+  studentName: string,
+  samples: ISample[],
+  handleClick?: (sample: ISample | null, doScroll?: boolean) => void
+) => {
   const row = document.createElement("div");
   row.classList.add("row");
 
@@ -17,6 +22,9 @@ export function createRow(container: HTMLDivElement, studentName: string, sample
 
     const sampleContainer = document.createElement("div");
     sampleContainer.id = `sample_${id}`;
+    if (handleClick) {
+      sampleContainer.onclick = () => handleClick(sample, false);
+    }
     sampleContainer.classList.add("sampleContainer");
 
     const sampleLabel = document.createElement("div");
@@ -37,4 +45,4 @@ export function createRow(container: HTMLDivElement, studentName: string, sample
   }
 
   container.appendChild(row);
-}
+};

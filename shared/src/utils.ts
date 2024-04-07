@@ -1,12 +1,12 @@
-export function formatNumber(n: number, digit: number = 2): number {
-  return Number((n * 100).toFixed(digit))
+export const formatNumber = (n: number, digit: number = 2): string => {
+  return (n * 100).toFixed(digit)
 }
 
-export function formatPercent(n: number, digit: number = 2): string {
+export const formatPercent = (n: number, digit: number = 2): string => {
   return formatNumber(n, digit) + '%'
 }
 
-export function groupBy<T>(arr: T[], prop: keyof T): Record<string, T[]> {
+export const groupBy = <T>(arr: T[], prop: keyof T): Record<string, T[]> => {
   const groups = arr.reduce(
     (acc, obj) => {
       const key = String(obj[prop])

@@ -1,11 +1,11 @@
 import { Path } from './types'
 
-export function getPathCount(paths: Path[]) {
+export const getPathCount = (paths: Path[]): number => {
   return paths.length
 }
 
-export function getPointCount(paths: Path[]) {
+export const getPointCount = (paths: Path[]): number => {
   const points = paths.flat()
-  
+
   return points.length
 }

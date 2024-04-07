@@ -1,3 +1,5 @@
+/* ========== global ========== */
+
 body {
   background-color: hsl(221.2 83.2% 53.3%);
   overscroll-behavior: none;
@@ -34,6 +36,17 @@ button:disabled:hover {
 
 /* ========== viewer ========== */
 
+#container {
+  width: calc(100% - 400px);
+}
+
+#chartContainer {
+  position: fixed;
+  right: 0;
+  top: 50%;
+  transform: translate(0, -50%);
+}
+
 .row {
   display: flex;
   align-items: center;
@@ -61,4 +74,8 @@ button:disabled:hover {
 
 .blur {
   filter: blur(5px);
+}
+
+.emphasize {
+  background-color: yellow;
 }
