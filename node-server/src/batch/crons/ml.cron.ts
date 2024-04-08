@@ -112,17 +112,20 @@ export default class MLCron {
   static async feature_extractor() {
     console.log('STEP3 - Feature Extracting ...')
 
+    const featureFuncs = Feature.inUse.map(f => f.function)
+
     const samples = JSON.parse(fs.readFileSync(FILE_PATH.SAMPLES_JSON, { encoding: 'utf-8' })) as ISample[]
     for (const sample of samples) {
       const data = fs.readFileSync(`${FILE_PATH.JSON_DIR}/${sample.id}.json`, { encoding: 'utf-8' })
 
       const paths = JSON.parse(data) as Path[]
 
-      sample.point = new Point(Feature.getPathCount(paths), Feature.getPointCount(paths))
+      sample.point = new Point(featureFuncs[0](paths), featureFuncs[1](paths))
     }
 
-    const featureNames = ['Path Count', 'Point Count']
-    const features = JSON.stringify({ featureNames: featureNames, samples: samples })
+    ctx.getImageData(0, 0, 400, 400)
+
+    const features = JSON.stringify({ featureNames: Feature.inUse.map(f => f.name), samples: samples })
 
     fs.writeFileSync(FILE_PATH.FEATURES_JSON, features)
     fs.writeFileSync(FILE_PATH.WEB_FEATURES_TS, `export const features=${features};`)

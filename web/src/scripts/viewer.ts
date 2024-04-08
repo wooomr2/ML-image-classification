@@ -74,8 +74,11 @@ function handleClick(sample: ISample | null, doScroll = true) {
 }
 
 function onDrawingUpdate(paths: Path[]) {
-  const point = new Point(Feature.getPathCount(paths), Feature.getPointCount(paths));
+  const featureFuncs = Feature.inUse.map((f) => f.function);
+
+  const point = new Point(featureFuncs[0](paths), featureFuncs[1](paths));
   console.log(point);
+
   chart.showDynamicPoint(point);
 }
 
