@@ -1,9 +1,9 @@
 export const formatNumber = (n: number, digit: number = 2): string => {
-  return (n * 100).toFixed(digit)
+  return n.toFixed(digit)
 }
 
 export const formatPercent = (n: number, digit: number = 2): string => {
-  return formatNumber(n, digit) + '%'
+  return formatNumber(n * 100, digit) + '%'
 }
 
 export const groupBy = <T>(arr: T[], prop: keyof T): Record<string, T[]> => {
