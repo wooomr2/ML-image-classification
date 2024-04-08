@@ -11,8 +11,8 @@ import {
   scale,
   subtract,
 } from "shared";
-import { IChartOptions } from "./types";
 import { Graphics } from "./graphics";
+import { IChartOptions } from "./types";
 
 export class Chart {
   samples: ISample[];
@@ -28,12 +28,14 @@ export class Chart {
   dataTrans: { offset: Point; scale: number };
   dragInfo: { start: Point; end: Point; offset: Point; dragging: boolean };
 
-  hoveredSample: ISample | null;
-  selectedSample: ISample | null;
+  hoveredSample: ISample | null = null;
+  selectedSample: ISample | null = null;
 
   defaultDataBounds: IBoundary;
   dataBounds: IBoundary;
   pixelBounds: IBoundary;
+
+  dynamicPoint: Point | null = null;
 
   constructor(
     container: HTMLDivElement,
@@ -51,9 +53,9 @@ export class Chart {
     this.canvas.height = options.size;
     this.canvas.setAttribute("style", "background-color: white;");
 
-    container.appendChild(this.canvas);
-
     this.ctx = this.canvas.getContext("2d")!;
+
+    container.appendChild(this.canvas);
 
     this.margin = options.size * 0.1;
     this.transparency = 0.7;
@@ -70,9 +72,6 @@ export class Chart {
       dragging: false,
     };
 
-    this.hoveredSample = null;
-    this.selectedSample = null;
-
     this.defaultDataBounds = this.#getDataBounds();
     this.dataBounds = this.#getDataBounds();
     this.pixelBounds = this.#getPixelBounds();
@@ -80,6 +79,21 @@ export class Chart {
     this.#draw();
 
     this.#addEventListeners();
+  }
+
+  selectSample(sample: ISample | null) {
+    this.selectedSample = sample;
+    this.#draw();
+  }
+
+  showDynamicPoint(point: Point) {
+    this.dynamicPoint = point;
+    this.#draw();
+  }
+
+  hideDynamicPoint() {
+    this.dynamicPoint = null;
+    this.#draw();
   }
 
   #addEventListeners() {
@@ -243,12 +257,14 @@ export class Chart {
       this.#emphasizeSample(selectedSample, "yellow");
     }
 
-    this.#drawAxes();
-  }
+    if (this.dynamicPoint) {
+      const pixelLocl = remapPoint(this.dataBounds, this.pixelBounds, this.dynamicPoint);
+      
+      Graphics.drawPoint(ctx, pixelLocl, "rgba(255,255,255,0.7", 10000);
+      Graphics.drawPoint(ctx, pixelLocl, "black");
+    }
 
-  selectSample(sample: ISample | null) {
-    this.selectedSample = sample;
-    this.#draw();
+    this.#drawAxes();
   }
 
   #emphasizeSample(sample: ISample, color = "white") {

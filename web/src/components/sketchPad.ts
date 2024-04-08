@@ -7,10 +7,12 @@ export class SketchPad {
 
   undoBtn: HTMLButtonElement;
 
+  onUpdate?: (paths: Path[]) => void;
+
   paths: Path[] = [];
   isDrawing = false;
 
-  constructor(container: HTMLElement, size = 400) {
+  constructor(container: HTMLElement, onUpdate?: (paths: Path[]) => void, size = 400) {
     this.size = size;
 
     this.canvas = document.createElement("canvas");
@@ -18,6 +20,8 @@ export class SketchPad {
     this.canvas.height = size;
     this.canvas.style.background = "white";
     this.canvas.style.boxShadow = "0px 0px 10px 2px black";
+
+    this.ctx = this.canvas.getContext("2d")!;
 
     container.appendChild(this.canvas);
     const lineBreak = document.createElement("br");
@@ -27,8 +31,7 @@ export class SketchPad {
     this.undoBtn.textContent = "Undo";
     container.appendChild(this.undoBtn);
 
-    this.ctx = this.canvas.getContext("2d")!;
-
+    this.onUpdate = onUpdate;
     this.reset();
 
     this.#addEventListeners();
@@ -38,6 +41,12 @@ export class SketchPad {
     this.paths = [];
     this.isDrawing = false;
     this.#redraw();
+  }
+
+  triggerUpdate() {
+    if (this.onUpdate) {
+      this.onUpdate(this.paths);
+    }
   }
 
   #addEventListeners() {
@@ -106,6 +115,8 @@ export class SketchPad {
     } else {
       this.undoBtn.disabled = true;
     }
+
+    this.triggerUpdate();
   }
 
   #getPoint(evt: MouseEvent | Touch): Point {
