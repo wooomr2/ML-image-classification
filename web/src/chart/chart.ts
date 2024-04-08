@@ -35,7 +35,8 @@ export class Chart {
   dataBounds: IBoundary;
   pixelBounds: IBoundary;
 
-  dynamicPoint: Point | null = null;
+  dynamic: { point: Point; label: string } | null = null;
+  nearestSample: ISample | null = null;
 
   constructor(
     container: HTMLDivElement,
@@ -86,13 +87,14 @@ export class Chart {
     this.#draw();
   }
 
-  showDynamicPoint(point: Point) {
-    this.dynamicPoint = point;
+  showDynamicPoint(point: Point, label: string, nearestSample: ISample | null) {
+    this.dynamic = { point, label };
+    this.nearestSample = nearestSample;
     this.#draw();
   }
 
   hideDynamicPoint() {
-    this.dynamicPoint = null;
+    this.dynamic = null;
     this.#draw();
   }
 
@@ -216,11 +218,20 @@ export class Chart {
     const xs = samples.map((s) => s.point.x);
     const ys = samples.map((s) => s.point.y);
 
+    const minX = Math.min(...xs);
+    const maxX = Math.max(...xs);
+    const minY = Math.min(...ys);
+    const maxY = Math.max(...ys);
+
+    const deltaX = maxX - minX;
+    const deltaY = maxY - minY;
+    const deltaMax = Math.max(deltaX, deltaY);
+
     const bounds: IBoundary = {
-      left: Math.min(...xs),
-      right: Math.max(...xs),
-      top: Math.max(...ys),
-      bottom: Math.min(...ys),
+      left: minX,
+      right: minX + deltaMax, //maxX
+      top: minY + deltaMax, //maxY
+      bottom: minY,
     };
 
     return bounds;
@@ -239,7 +250,19 @@ export class Chart {
   }
 
   #draw() {
-    const { ctx, canvas, transparency, hoveredSample, selectedSample, samples } = this;
+    const {
+      ctx,
+      canvas,
+      transparency,
+      hoveredSample,
+      selectedSample,
+      samples,
+      dynamic,
+      options,
+      nearestSample,
+      dataBounds,
+      pixelBounds,
+    } = this;
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -257,11 +280,18 @@ export class Chart {
       this.#emphasizeSample(selectedSample, "yellow");
     }
 
-    if (this.dynamicPoint) {
-      const pixelLocl = remapPoint(this.dataBounds, this.pixelBounds, this.dynamicPoint);
-      
-      Graphics.drawPoint(ctx, pixelLocl, "rgba(255,255,255,0.7", 10000);
-      Graphics.drawPoint(ctx, pixelLocl, "black");
+    if (dynamic && nearestSample) {
+      const pixelLoc = remapPoint(dataBounds, pixelBounds, dynamic.point);
+
+      Graphics.drawPoint(ctx, pixelLoc, "rgba(255,255,255,0.7", 10000);
+      Graphics.drawPoint(ctx, pixelLoc, "black");
+
+      ctx.moveTo(pixelLoc.x, pixelLoc.y);
+      const nearestLoc = remapPoint(dataBounds, pixelBounds, nearestSample.point);
+      ctx.lineTo(nearestLoc.x, nearestLoc.y);
+      ctx.stroke();
+
+      Graphics.drawImage(ctx, { image: options.styles[dynamic.label].image!, loc: pixelLoc });
     }
 
     this.#drawAxes();

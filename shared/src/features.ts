@@ -33,12 +33,8 @@ export const getHeight = (paths: Path[]): number => {
 }
 
 export const inUse = [
-  {
-    name: 'Width',
-    function: getWidth,
-  },
-  {
-    name: 'Height',
-    function: getHeight,
-  },
+  // { name: 'Path Count', function: getPathCount },
+  //{ name: 'Point Count', function: getPointCount },
+  { name: 'Width', function: getWidth },
+  { name: 'Height', function: getHeight },
 ]

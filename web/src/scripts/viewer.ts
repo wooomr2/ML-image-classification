@@ -4,26 +4,29 @@ import { IChartOptions } from "@/chart/types";
 import { createRow } from "@/components/display";
 import { features } from "@/data/features";
 import "@/styles/style.css";
-import { Feature, ISample, Path, Point, Util } from "shared";
+import { Feature, ISample, Path, Point, Util, getNearestIndex } from "shared";
 import { SketchPad } from "@/components/sketchPad";
-
-const { featureNames, samples } = features;
-const groups = Util.groupBy(samples, "student_id");
 
 const container = document.getElementById("container") as HTMLDivElement;
 const chartContainer = document.getElementById("chartContainer") as HTMLDivElement;
 const inputContainer = document.getElementById("inputContainer") as HTMLDivElement;
+const predictedContainer = document.getElementById("predictedContainer") as HTMLDivElement;
 const toggleButton = document.getElementById("toggleButton") as HTMLButtonElement;
 
 toggleButton.addEventListener("click", toggleInput);
 
+const { featureNames, samples: rawSamples } = features;
+const samples = rawSamples.map((s) => ({ ...s, point: new Point(s.point.x, s.point.y) }));
+
+const groups = Util.groupBy(samples, "student_id");
+
 for (const student_id in groups) {
-  const samples = groups[student_id];
+  const groupSamples = groups[student_id];
 
   // student_id로 groupBy 되었으니까 그룹 내 student_name은 모두 같음
-  const { student_name } = samples[0];
+  const { student_name } = groupSamples[0];
 
-  createRow(container, student_name, samples as ISample[], handleClick);
+  createRow(container, student_name, groupSamples, handleClick);
 }
 
 const options: IChartOptions = {
@@ -44,8 +47,8 @@ const options: IChartOptions = {
 
 Graphics.generateImages(options.styles);
 
-const chart = new Chart(chartContainer, samples as ISample[], options, handleClick);
-const sketchPad = new SketchPad(inputContainer, onDrawingUpdate, options.size);
+const chart = new Chart(chartContainer, samples, options, handleClick);
+const sketchPad = new SketchPad(inputContainer, onDrawingUpdate, options.size - 50);
 sketchPad.canvas.style.cssText += "outline:10000px solid rgba(0,0,0,0.7);";
 
 function handleClick(sample: ISample | null, doScroll = true) {
@@ -77,9 +80,23 @@ function onDrawingUpdate(paths: Path[]) {
   const featureFuncs = Feature.inUse.map((f) => f.function);
 
   const point = new Point(featureFuncs[0](paths), featureFuncs[1](paths));
-  console.log(point);
+  const { label, nearestSample } = classify(point);
 
-  chart.showDynamicPoint(point);
+  if (paths.length) {
+    predictedContainer.innerHTML = `Is it a ${label}?`;
+  } else {
+    predictedContainer.innerHTML = "Draw Something!";
+  }
+
+  chart.showDynamicPoint(point, label, nearestSample);
+}
+
+function classify(point: Point) {
+  const samplePoints = samples.map((s) => s.point);
+  const nearestIdx = getNearestIndex(point, samplePoints);
+  const nearestSample = samples[nearestIdx];
+
+  return { label: nearestSample.label, nearestSample: nearestSample };
 }
 
 function toggleInput() {
