@@ -16,17 +16,16 @@ export class Graphics {
       ctx.font = `${size}px Courier`;
 
       const colorHueMap = new Map([
-        ["gray", 0],
-        ["red", 60],
-        ["yellow", 120],
-        ["green", 180],
-        ["cyan", 240],
-        ["blue", 300],
-        ["magenta", 360],
+        ["red", 0],
+        ["yellow", 60],
+        ["green", 120],
+        ["cyan", 180],
+        ["blue", 240],
+        ["magenta", 300],
       ]);
 
       const hue = colorHueMap.get(style.color);
-      if (hue) {
+      if (typeof hue === 'number') {
         ctx.filter = `
              brightness(2)
              contrast(0.3)
