@@ -2,10 +2,11 @@ import { Chart } from "@/chart/chart";
 import { Graphics } from "@/chart/graphics";
 import { IChartOptions } from "@/chart/types";
 import { createRow } from "@/components/display";
-import { features } from "@/data/features";
-import "@/styles/style.css";
-import { Feature, ISample, Path, Point, Util, getNearestIndex } from "shared";
 import { SketchPad } from "@/components/sketchPad";
+import { features } from "@/data/features";
+import { minMax } from "@/data/minMax";
+import "@/styles/style.css";
+import { Feature, ISample, Path, Point, Util, getNearestIndex, normalizePoints } from "shared";
 
 const container = document.getElementById("container") as HTMLDivElement;
 const chartContainer = document.getElementById("chartContainer") as HTMLDivElement;
@@ -80,6 +81,8 @@ function onDrawingUpdate(paths: Path[]) {
   const featureFuncs = Feature.inUse.map((f) => f.function);
 
   const point = new Point(featureFuncs[0](paths), featureFuncs[1](paths));
+  normalizePoints([point], minMax);
+
   const { label, nearestSample } = classify(point);
 
   if (paths.length) {

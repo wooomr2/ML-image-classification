@@ -11,6 +11,7 @@ import {
   Path,
   Point,
   TLabel,
+  normalizePoints,
 } from 'shared'
 import { printProgress } from '../../utils/process.util'
 
@@ -123,12 +124,15 @@ export default class MLCron {
       sample.point = new Point(featureFuncs[0](paths), featureFuncs[1](paths))
     }
 
+    const minMax = normalizePoints(samples.map(s => s.point))
+
     ctx.getImageData(0, 0, 400, 400)
 
     const features = JSON.stringify({ featureNames: Feature.inUse.map(f => f.name), samples: samples })
 
     fs.writeFileSync(FILE_PATH.FEATURES_JSON, features)
     fs.writeFileSync(FILE_PATH.WEB_FEATURES_TS, `export const features=${features};`)
+    fs.writeFileSync(FILE_PATH.MIN_MAX_TS, `export const minMax=${JSON.stringify(minMax)};`)
 
     console.log('STEP3 - Feature Extraction DONE.')
   }

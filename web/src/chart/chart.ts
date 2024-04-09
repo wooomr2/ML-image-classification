@@ -223,14 +223,14 @@ export class Chart {
     const minY = Math.min(...ys);
     const maxY = Math.max(...ys);
 
-    const deltaX = maxX - minX;
-    const deltaY = maxY - minY;
-    const deltaMax = Math.max(deltaX, deltaY);
+    // const deltaX = maxX - minX;
+    // const deltaY = maxY - minY;
+    // const deltaMax = Math.max(deltaX, deltaY);
 
     const bounds: IBoundary = {
       left: minX,
-      right: minX + deltaMax, //maxX
-      top: minY + deltaMax, //maxY
+      right: maxX, // minX + deltaMax
+      top: maxY, // maxY + deltaMax,
       bottom: minY,
     };
 
@@ -284,8 +284,9 @@ export class Chart {
       const pixelLoc = remapPoint(dataBounds, pixelBounds, dynamic.point);
 
       Graphics.drawPoint(ctx, pixelLoc, "rgba(255,255,255,0.7", 10000);
-      Graphics.drawPoint(ctx, pixelLoc, "black");
+      // Graphics.drawPoint(ctx, pixelLoc, "black");
 
+      ctx.beginPath();
       ctx.moveTo(pixelLoc.x, pixelLoc.y);
       const nearestLoc = remapPoint(dataBounds, pixelBounds, nearestSample.point);
       ctx.lineTo(nearestLoc.x, nearestLoc.y);

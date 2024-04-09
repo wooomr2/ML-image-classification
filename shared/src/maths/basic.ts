@@ -54,3 +54,28 @@ export const getNearestIndex = (loc: Point, points: Point[]): number => {
 
   return nearestIndex
 }
+
+export const normalizePoints = (points: Point[], minMax?: { min: number[]; max: number[] }) => {
+  let min: number[], max: number[]
+
+  if (minMax) {
+    min = minMax.min
+    max = minMax.max
+  } else {
+    min = points[0].coordArray
+    max = points[0].coordArray
+    for (let i = 1; i < points.length; i++) {
+      for (let j = 0; j < Point.dimension(); j++) {
+        min[j] = Math.min(min[j], points[i].coordArray[j])
+        max[j] = Math.max(max[j], points[i].coordArray[j])
+      }
+    }
+  }
+
+  for (const point of points) {
+    point.x = invLerp(min[0], max[0], point.x)
+    point.y = invLerp(min[1], max[1], point.y)
+  }
+
+  return { min, max }
+}

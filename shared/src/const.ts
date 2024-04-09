@@ -15,6 +15,7 @@ export const FILE_PATH = {
   WEB_IMG_DIR: webDir + '/public/img',
   WEB_SAMPLES_TS: webDir + '/src/data/samples.ts',
   WEB_FEATURES_TS: webDir + '/src/data/features.ts',
+  MIN_MAX_TS: webDir + '/src/data/minMax.ts',
 }
 
 export const IMAGE_LABELS = ['car', 'fish', 'house', 'tree', 'bicycle', 'guitar', 'pencil', 'clock'] as const

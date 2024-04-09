@@ -4,8 +4,19 @@ export class Point {
     public y: number
   ) {}
 
+  static dimension(): number {
+    return 2
+  }
+
+  get coordinate() {
+    return {
+      x: this.x,
+      y: this.y,
+    }
+  }
+
   /** @return [x, y] */
-  get coordinate(): [number, number] {
+  get coordArray(): [number, number] {
     return [this.x, this.y]
   }
 
