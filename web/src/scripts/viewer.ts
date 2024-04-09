@@ -6,7 +6,7 @@ import { SketchPad } from "@/components/sketchPad";
 import { features } from "@/data/features";
 import { minMax } from "@/data/minMax";
 import "@/styles/style.css";
-import { Feature, ISample, Path, Point, Util, getNearestIndex, normalizePoints } from "shared";
+import { Feature, ISample, Path, Point, Util, getNearestIndices, normalizePoints } from "shared";
 
 const container = document.getElementById("container") as HTMLDivElement;
 const chartContainer = document.getElementById("chartContainer") as HTMLDivElement;
@@ -83,7 +83,7 @@ function onDrawingUpdate(paths: Path[]) {
   const point = new Point(featureFuncs[0](paths), featureFuncs[1](paths));
   normalizePoints([point], minMax);
 
-  const { label, nearestSample } = classify(point);
+  const { label, nearestSamples } = classify(point);
 
   if (paths.length) {
     predictedContainer.innerHTML = `Is it a ${label}?`;
@@ -91,15 +91,25 @@ function onDrawingUpdate(paths: Path[]) {
     predictedContainer.innerHTML = "Draw Something!";
   }
 
-  chart.showDynamicPoint(point, label, nearestSample);
+  chart.showDynamicPoint(point, label, nearestSamples);
 }
 
 function classify(point: Point) {
   const samplePoints = samples.map((s) => s.point);
-  const nearestIdx = getNearestIndex(point, samplePoints);
-  const nearestSample = samples[nearestIdx];
+  const nearestIndices = getNearestIndices(point, samplePoints, 10);
 
-  return { label: nearestSample.label, nearestSample: nearestSample };
+  const nearestSamples = nearestIndices.map((i) => samples[i]);
+  const labels = nearestSamples.map((s) => s.label);
+
+  const counts: Record<string, number> = {};
+  for (const label of labels) {
+    counts[label] = (counts[label] || 0) + 1;
+  }
+  const max = Math.max(...Object.values(counts));
+
+  const label = labels.find((l) => counts[l] === max)!;
+
+  return { label: label, nearestSamples: nearestSamples };
 }
 
 function toggleInput() {

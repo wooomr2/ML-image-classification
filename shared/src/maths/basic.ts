@@ -55,6 +55,16 @@ export const getNearestIndex = (loc: Point, points: Point[]): number => {
   return nearestIndex
 }
 
+export const getNearestIndices = (loc: Point, points: Point[], k = 1): number[] => {
+  const indices = points
+    .map((point, idx) => ({ idx, dist: distance(loc, point) }))
+    .sort((a, b) => a.dist - b.dist)
+    .slice(0, k)
+    .map(item => item.idx)
+
+  return indices
+}
+
 export const normalizePoints = (points: Point[], minMax?: { min: number[]; max: number[] }) => {
   let min: number[], max: number[]
 

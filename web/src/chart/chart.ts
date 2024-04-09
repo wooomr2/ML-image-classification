@@ -36,7 +36,7 @@ export class Chart {
   pixelBounds: IBoundary;
 
   dynamic: { point: Point; label: string } | null = null;
-  nearestSample: ISample | null = null;
+  nearestSamples: ISample[] | null = null;
 
   constructor(
     container: HTMLDivElement,
@@ -87,9 +87,9 @@ export class Chart {
     this.#draw();
   }
 
-  showDynamicPoint(point: Point, label: string, nearestSample: ISample | null) {
+  showDynamicPoint(point: Point, label: string, nearestSamples: ISample[] | null) {
     this.dynamic = { point, label };
-    this.nearestSample = nearestSample;
+    this.nearestSamples = nearestSamples;
     this.#draw();
   }
 
@@ -259,7 +259,7 @@ export class Chart {
       samples,
       dynamic,
       options,
-      nearestSample,
+      nearestSamples,
       dataBounds,
       pixelBounds,
     } = this;
@@ -280,17 +280,19 @@ export class Chart {
       this.#emphasizeSample(selectedSample, "yellow");
     }
 
-    if (dynamic && nearestSample) {
+    if (dynamic && nearestSamples) {
       const pixelLoc = remapPoint(dataBounds, pixelBounds, dynamic.point);
 
       Graphics.drawPoint(ctx, pixelLoc, "rgba(255,255,255,0.7", 10000);
       // Graphics.drawPoint(ctx, pixelLoc, "black");
 
-      ctx.beginPath();
-      ctx.moveTo(pixelLoc.x, pixelLoc.y);
-      const nearestLoc = remapPoint(dataBounds, pixelBounds, nearestSample.point);
-      ctx.lineTo(nearestLoc.x, nearestLoc.y);
-      ctx.stroke();
+      for (const nSample of nearestSamples) {
+        const point = remapPoint(dataBounds, pixelBounds, nSample.point);
+        ctx.beginPath();
+        ctx.moveTo(pixelLoc.x, pixelLoc.y);
+        ctx.lineTo(point.x, point.y);
+        ctx.stroke();
+      }
 
       Graphics.drawImage(ctx, { image: options.styles[dynamic.label].image!, loc: pixelLoc });
     }
