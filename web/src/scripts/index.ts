@@ -2,8 +2,16 @@ import { SketchPad } from "@/components/sketchPad";
 import "@/styles/style.css";
 import { IMAGE_LABELS, IPreProcessedData } from "shared";
 
-let index = 0;
+const sketchPadContainer = document.getElementById("sketchPadContainer") as HTMLDivElement;
+const studentInput = document.getElementById("studentInput") as HTMLInputElement | null;
+const instructions = document.getElementById("instructions") as HTMLParagraphElement;
+const advanceBtn = document.getElementById("advanceBtn") as HTMLButtonElement;
 
+advanceBtn.onclick = start;
+
+const sketchPad = new SketchPad(sketchPadContainer);
+
+let index = 0;
 const data: IPreProcessedData = {
   student: "",
   session: new Date().getTime(),
@@ -19,15 +27,6 @@ const data: IPreProcessedData = {
   },
 };
 
-const sketchPadContainer = document.getElementById("sketchPadContainer") as HTMLDivElement;
-const studentInput = document.getElementById("studentInput") as HTMLInputElement | null;
-const instructions = document.getElementById("instructions") as HTMLParagraphElement;
-const advanceBtn = document.getElementById("advanceBtn") as HTMLButtonElement;
-
-advanceBtn.onclick = start;
-
-const sketchPad = new SketchPad(sketchPadContainer);
-
 function start() {
   if (!studentInput?.value) {
     return alert("Please enter your name");
@@ -39,6 +38,7 @@ function start() {
   sketchPadContainer.style.visibility = "visible";
 
   instructions.innerHTML = `Please draw a ${IMAGE_LABELS[index]}`;
+  instructions.style.display = "initial";
 
   advanceBtn.innerHTML = "NEXT";
   advanceBtn.onclick = next;
@@ -59,7 +59,6 @@ function next() {
     sketchPadContainer.style.visibility = "hidden";
     instructions.innerHTML = "Thank you for participating!";
     advanceBtn.innerHTML = "SAVE";
-
     advanceBtn.onclick = save;
   }
 }
@@ -71,14 +70,11 @@ function save() {
   const element = document.createElement("a");
   element.setAttribute(
     "href",
-    "data:text/plain;charset=utf-8," + encodeURIComponent(JSON.stringify(data))
+    "data:application/json;charset=utf-8," + encodeURIComponent(JSON.stringify(data))
   );
 
   const fileName = `${data.session}.json`;
   element.setAttribute("download", fileName);
 
-  element.style.display = "none";
-  document.body.appendChild(element);
   element.click();
-  document.body.removeChild(element);
 }

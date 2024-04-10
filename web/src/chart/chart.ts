@@ -22,8 +22,12 @@ export class Chart {
   canvas: HTMLCanvasElement;
   ctx: CanvasRenderingContext2D;
 
+  overlayCanvas: HTMLCanvasElement;
+  overlayCtx: CanvasRenderingContext2D;
+
+  backgroundImage: HTMLImageElement;
+
   margin: number;
-  transparency: number;
 
   dataTrans: { offset: Point; scale: number };
   dragInfo: { start: Point; end: Point; offset: Point; dragging: boolean };
@@ -47,6 +51,17 @@ export class Chart {
     this.samples = samples;
     this.options = options;
 
+    const bgImage = new Image();
+    bgImage.src = options.bgImageSrc;
+    this.backgroundImage = bgImage;
+    this.backgroundImage.onload = () => this.#draw();
+
+    Object.values(this.options.styles).forEach((style) => {
+      if (style.image) {
+        style.image.onload = () => this.#draw();
+      }
+    });
+
     this.handleClick = handleClick;
 
     this.canvas = document.createElement("canvas");
@@ -59,8 +74,19 @@ export class Chart {
 
     container.appendChild(this.canvas);
 
+    // for optimization
+    this.overlayCanvas = document.createElement("canvas");
+    this.overlayCanvas.width = options.size;
+    this.overlayCanvas.height = options.size;
+    this.overlayCanvas.style.position = "absolute";
+    this.overlayCanvas.style.left = "0px";
+    this.overlayCanvas.style.pointerEvents = "none";
+    container.appendChild(this.overlayCanvas);
+
+    this.overlayCtx = this.overlayCanvas.getContext("2d")!;
+    this.overlayCtx.imageSmoothingEnabled = false;
+
     this.margin = options.size * 0.1;
-    this.transparency = 0.7;
 
     this.dataTrans = {
       offset: new Point(0, 0),
@@ -85,18 +111,18 @@ export class Chart {
 
   selectSample(sample: ISample | null) {
     this.selectedSample = sample;
-    this.#draw();
+    this.#drawOverlay();
   }
 
   showDynamicPoint(point: Point, label: string, nearestSamples: ISample[] | null) {
     this.dynamic = { point, label };
     this.nearestSamples = nearestSamples;
-    this.#draw();
+    this.#drawOverlay();
   }
 
   hideDynamicPoint() {
     this.dynamic = null;
-    this.#draw();
+    this.#drawOverlay();
   }
 
   #addEventListeners() {
@@ -134,7 +160,12 @@ export class Chart {
         this.hoveredSample = dist < this.margin / 2 ? nearest : null;
       }
 
-      this.#draw();
+      if (dragInfo.dragging) {
+        this.#draw();
+        this.#drawOverlay();
+      } else {
+        this.#drawOverlay();
+      }
     };
 
     canvas.onmouseup = () => {
@@ -147,13 +178,17 @@ export class Chart {
       const direction = Math.sign(evt.deltaY);
       const step = 0.02;
 
-      dataTrans.scale += direction * step;
-      // set scale min, max
-      dataTrans.scale = Math.max(step, Math.min(2, dataTrans.scale));
+      // dataTrans.scale += direction * step;
+      // dataTrans.scale = Math.max(step, Math.min(2, dataTrans.scale));
+
+      const scale = 1 + direction * step;
+      dataTrans.scale *= scale;
 
       this.#updateDataBounds(dataTrans.offset, dataTrans.scale);
 
       this.#draw();
+      this.#drawOverlay();
+
       evt.preventDefault();
     };
 
@@ -177,6 +212,7 @@ export class Chart {
       }
 
       this.#draw();
+      this.#drawOverlay();
     };
   }
 
@@ -251,36 +287,46 @@ export class Chart {
   }
 
   #draw() {
-    const {
-      ctx,
-      canvas,
-      transparency,
-      hoveredSample,
-      selectedSample,
-      samples,
-      dynamic,
-      options,
-      nearestSamples,
-      dataBounds,
-      pixelBounds,
-      margin,
-      dataTrans,
-    } = this;
+    const { ctx, canvas, samples, options, dataBounds, pixelBounds, backgroundImage } = this;
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    // Decision Boundary Background Image
-    {
+    // Decision Boundary Background Image:: 로드 후 그려야함
+    if (backgroundImage) {
       const topLeft = remapPoint(dataBounds, pixelBounds, new Point(0, 1));
-      const size = (canvas.width - 2 * margin) / dataTrans.scale ** 2;
-      ctx.drawImage(options.bg, topLeft.x, topLeft.y, size, size);
+      const bottomRight = remapPoint(dataBounds, pixelBounds, new Point(1, 0));
+      ctx.drawImage(
+        backgroundImage,
+        topLeft.x,
+        topLeft.y,
+        bottomRight.x - topLeft.x,
+        bottomRight.y - topLeft.y
+      );
     }
 
-    ctx.globalAlpha = transparency;
+    ctx.globalAlpha = options.transparency ?? 1;
 
-    this.#drawSamples(samples);
+    this.#drawSamples(samples, ctx);
 
     ctx.globalAlpha = 1;
+
+    this.#drawAxes(ctx);
+  }
+
+  #drawOverlay() {
+    const {
+      overlayCtx,
+      overlayCanvas,
+      hoveredSample,
+      selectedSample,
+      nearestSamples,
+      dynamic,
+      dataBounds,
+      pixelBounds,
+      options,
+    } = this;
+
+    overlayCtx.clearRect(0, 0, overlayCanvas.width, overlayCanvas.height);
 
     if (hoveredSample) {
       this.#emphasizeSample(hoveredSample);
@@ -290,44 +336,55 @@ export class Chart {
       this.#emphasizeSample(selectedSample, "yellow");
     }
 
-    if (dynamic && nearestSamples) {
+    if (dynamic) {
       const pixelLoc = remapPoint(dataBounds, pixelBounds, dynamic.point);
-
-      Graphics.drawPoint(ctx, pixelLoc, "rgba(255,255,255,0.7", 10000);
-      // Graphics.drawPoint(ctx, pixelLoc, "black");
-
-      for (const nSample of nearestSamples) {
-        const point = remapPoint(dataBounds, pixelBounds, nSample.point);
-        ctx.beginPath();
-        ctx.moveTo(pixelLoc.x, pixelLoc.y);
-        ctx.lineTo(point.x, point.y);
-        ctx.stroke();
+      if (nearestSamples) {
+        this.#showNearestLines(pixelLoc);
       }
 
-      Graphics.drawImage(ctx, { image: options.styles[dynamic.label].image!, loc: pixelLoc });
+      Graphics.drawPoint(overlayCtx, pixelLoc, "rgba(255,255,255,0.7)", 10000);
+      Graphics.drawImage(overlayCtx, {
+        image: options.styles[dynamic.label].image!,
+        loc: pixelLoc,
+      });
     }
 
-    this.#drawAxes();
+    this.#drawAxes(overlayCtx);
+  }
+
+  #showNearestLines(pixelLoc: Point) {
+    const { nearestSamples, dataBounds, pixelBounds } = this;
+
+    if (!nearestSamples) return;
+
+    this.overlayCtx.strokeStyle = "gray";
+    for (const nSample of nearestSamples) {
+      const point = remapPoint(dataBounds, pixelBounds, nSample.point);
+      this.overlayCtx.beginPath();
+      this.overlayCtx.moveTo(pixelLoc.x, pixelLoc.y);
+      this.overlayCtx.lineTo(point.x, point.y);
+      this.overlayCtx.stroke();
+    }
   }
 
   #emphasizeSample(sample: ISample, color = "white") {
-    const { ctx, dataBounds, pixelBounds, margin } = this;
+    const { overlayCtx, dataBounds, pixelBounds, margin } = this;
     const pLoc = remapPoint(dataBounds, pixelBounds, sample.point);
 
-    const gradient = ctx.createRadialGradient(pLoc.x, pLoc.y, 0, pLoc.x, pLoc.y, margin);
+    const gradient = overlayCtx.createRadialGradient(pLoc.x, pLoc.y, 0, pLoc.x, pLoc.y, margin);
 
     gradient.addColorStop(0, color);
     // white: rgb(0,0,0), black: rgb(255,255,255)
     // alpha: 0: 완전투명 ~ 1: 완전불투명
     gradient.addColorStop(1, "rgba(255, 255, 255, 0)");
 
-    Graphics.drawPoint(ctx, pLoc, gradient, margin * 2);
+    Graphics.drawPoint(overlayCtx, pLoc, gradient, margin * 2);
 
-    this.#drawSamples([sample]);
+    this.#drawSamples([sample], overlayCtx);
   }
 
-  #drawAxes() {
-    const { ctx, canvas, pixelBounds, dataBounds, options, margin } = this;
+  #drawAxes(ctx: CanvasRenderingContext2D) {
+    const { canvas, pixelBounds, dataBounds, options, margin } = this;
     const { left, right, top, bottom } = pixelBounds;
 
     // clear outside points
@@ -421,8 +478,10 @@ export class Chart {
     }
   }
 
-  #drawSamples(samples: ISample[]) {
-    const { ctx, dataBounds, pixelBounds, options } = this;
+  #drawSamples(samples: ISample[], ctx: CanvasRenderingContext2D) {
+    const { dataBounds, pixelBounds, options } = this;
+
+    if (options.hideSamples) return;
 
     for (const sample of samples) {
       const { point, label } = sample;

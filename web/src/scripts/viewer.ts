@@ -87,18 +87,20 @@ const bg = new Image();
 bg.src = PUBLIC_SOURCE.DECISION_BOUNDARY;
 
 const options: IChartOptions = {
-  size: 400,
+  size: 480,
   axesLabels: featureNames,
   styles: IMAGE_STYLES,
   iconType: "image",
-  bg: bg,
+  bgImageSrc: PUBLIC_SOURCE.DECISION_BOUNDARY,
+  transparency: 0.9,
+  hideSamples: false,
 };
 
 Graphics.generateImages(options.styles);
 
 const chart = new Chart(chartContainer, trainingSamples, options, handleClick);
 const sketchPad = new SketchPad(inputContainer, onDrawingUpdate, options.size - 50);
-sketchPad.canvas.style.cssText += "outline:10000px solid rgba(0,0,0,0.7);";
+sketchPad.canvas.style.cssText += "outline:10000px solid rgba(255,255,255,0.7);";
 
 function handleClick(sample: ISample | null, doScroll = true) {
   if (!sample) {
@@ -128,7 +130,7 @@ function handleClick(sample: ISample | null, doScroll = true) {
 function onDrawingUpdate(paths: Path[]) {
   const results = Feature.inUse.map((f) => f.function(paths));
   const point = new Point(results[0], results[1]);
-  
+
   normalizePoints([point], minMax);
 
   const { label, nearestSamples } = kNN.predict(point);

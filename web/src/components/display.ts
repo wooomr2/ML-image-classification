@@ -1,7 +1,7 @@
 import { PUBLIC_SOURCE } from "@/const";
 import { ISample, ITestingSample, Util } from "shared";
 
-const flaggedUsers = [1663882102141, 1663900040545, 1664485938220];
+const flaggedUsers: number[] = [];
 
 export const createRow = (
   container: HTMLDivElement,
@@ -23,15 +23,18 @@ export const createRow = (
 
     const sampleContainer = document.createElement("div");
     sampleContainer.id = `sample_${id}`;
+
     if (handleClick) {
       sampleContainer.onclick = () => handleClick(sample, false);
     }
+
     sampleContainer.classList.add("sampleContainer");
+    
     if (Util.isTestingSample(sample)) {
       if (sample.correct) {
-        sampleContainer.style.backgroundColor = "lightgreen";
+        sampleContainer.style.backgroundColor = "mediumblue";
       } else {
-        sampleContainer.style.backgroundColor = "lightcoral";
+        sampleContainer.style.backgroundColor = "hsl(346.8 77.2% 49.8%)";
       }
     }
 

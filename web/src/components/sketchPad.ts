@@ -20,6 +20,7 @@ export class SketchPad {
     this.canvas.height = size;
     this.canvas.style.background = "white";
     this.canvas.style.boxShadow = "0px 0px 10px 2px black";
+    this.canvas.style.filter = "invert(1)";
 
     this.ctx = this.canvas.getContext("2d")!;
 
@@ -29,6 +30,8 @@ export class SketchPad {
 
     this.undoBtn = document.createElement("button");
     this.undoBtn.textContent = "Undo";
+    this.undoBtn.style.position = "relative";
+    this.undoBtn.style.zIndex = "1";
     container.appendChild(this.undoBtn);
 
     this.onUpdate = onUpdate;
@@ -50,55 +53,30 @@ export class SketchPad {
   }
 
   #addEventListeners() {
-    // Mouse events
-    {
-      this.canvas.onmousedown = (evt) => {
+    this.canvas.onpointerdown = (evt) => {
+      const point = this.#getPoint(evt);
+      this.paths.push([point]);
+      this.isDrawing = true;
+
+      evt.preventDefault();
+    };
+
+    this.canvas.onpointermove = (evt) => {
+      if (this.isDrawing) {
         const point = this.#getPoint(evt);
 
-        this.paths.push([point]);
-        this.isDrawing = true;
-      };
+        const lastPath = this.paths.at(-1)!;
+        lastPath.push(point);
 
-      this.canvas.onmousemove = (evt) => {
-        if (this.isDrawing) {
-          const point = this.#getPoint(evt);
+        this.#redraw();
+      }
+      evt.preventDefault();
+    };
 
-          const lastPath = this.paths.at(-1)!;
-          lastPath.push(point);
-
-          this.#redraw();
-        }
-      };
-
-      this.canvas.onmouseup = () => {
-        this.isDrawing = false;
-      };
-    }
-
-    // Touch events
-    {
-      this.canvas.ontouchstart = (evt) => {
-        const point = this.#getPoint(evt.touches[0]);
-
-        this.paths.push([point]);
-        this.isDrawing = true;
-      };
-
-      this.canvas.ontouchmove = (evt) => {
-        if (this.isDrawing) {
-          const point = this.#getPoint(evt.touches[0]);
-
-          const lastPath = this.paths.at(-1)!;
-          lastPath.push(point);
-
-          this.#redraw();
-        }
-      };
-
-      this.canvas.ontouchend = () => {
-        this.isDrawing = false;
-      };
-    }
+    this.canvas.onpointerup = (evt) => {
+      this.isDrawing = false;
+      evt.preventDefault();
+    };
 
     this.undoBtn.onclick = () => {
       this.paths.pop();
@@ -119,7 +97,7 @@ export class SketchPad {
     this.triggerUpdate();
   }
 
-  #getPoint(evt: MouseEvent | Touch): Point {
+  #getPoint(evt: PointerEvent): Point {
     const rect = this.canvas.getBoundingClientRect();
 
     const point = new Point(

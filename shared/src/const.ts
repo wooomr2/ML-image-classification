@@ -17,7 +17,7 @@ export const FILE_PATH = {
   TRAINING_CSV: dataDir + '/dataset/training.csv',
   TESTING_CSV: dataDir + '/dataset/testing.csv',
 
-  DECISION_BOUNDARY_IMG: dataDir + '/dataset/decision-boundary.png',
+  DECISION_BOUNDARY_IMG: dataDir + '/dataset/model/decision-boundary.png',
 
   // web
   SAMPLES_TS: webDir + '/src/data/samples.ts',
@@ -26,9 +26,9 @@ export const FILE_PATH = {
   TESTING_TS: webDir + '/src/data/testing.ts',
   MIN_MAX_TS: webDir + '/src/data/minMax.ts',
   
-  
+  // web-public
   WEB_IMG_DIR: webDir + '/public/img',
-  WEB_DECISION_BOUNDARY_IMG: webDir + '/public/decision-boundary.png',
+  WEB_DECISION_BOUNDARY_IMG: webDir + '/public/model/decision-boundary.png',
 }
 
 export const IMAGE_LABELS = ['car', 'fish', 'house', 'tree', 'bicycle', 'guitar', 'pencil', 'clock'] as const
