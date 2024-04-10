@@ -14,6 +14,9 @@ export const FILE_PATH = {
   TRAINING_JSON: dataDir + '/dataset/training.json',
   TESTING_JSON: dataDir + '/dataset/testing.json',
 
+  TRAINING_CSV: dataDir + '/dataset/training.csv',
+  TESTING_CSV: dataDir + '/dataset/testing.csv',
+
   DECISION_BOUNDARY_IMG: dataDir + '/dataset/decision-boundary.png',
 
   // web

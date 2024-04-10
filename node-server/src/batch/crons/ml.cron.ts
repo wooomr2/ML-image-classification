@@ -17,8 +17,8 @@ import {
   Util,
   normalizePoints,
 } from 'shared'
-import { printProgress } from '../../utils/process.util'
 import { ML_CONSTANTS } from '../../const'
+import { printProgress } from '../../utils/process.util'
 
 // 주의:: node-canvas의 CanvasRenderingContext2D를 DOM의 CanvasRenderingContext2D로 type-casting해서 사용중
 const canvas = createCanvas(ML_CONSTANTS.DEFAULT_CANVAS_SIZE, ML_CONSTANTS.DEFAULT_CANVAS_SIZE)
@@ -151,15 +151,30 @@ export default class MLCron {
 
     const featureNames = Feature.inUse.map(f => f.name)
 
-    const features = JSON.stringify({ featureNames: featureNames, samples: samples })
+    // const features = JSON.stringify({ featureNames: featureNames, samples: samples })
     const training = JSON.stringify({ featureNames: featureNames, samples: trainingSamples })
     const testing = JSON.stringify({ featureNames: featureNames, samples: testingSamples })
 
-    fs.writeFileSync(FILE_PATH.FEATURES_JSON, features)
+    // fs.writeFileSync(FILE_PATH.FEATURES_JSON, features)
     fs.writeFileSync(FILE_PATH.TRAINING_JSON, training)
     fs.writeFileSync(FILE_PATH.TESTING_JSON, testing)
 
-    fs.writeFileSync(FILE_PATH.FEATURES_TS, `export const features=${features};`)
+    fs.writeFileSync(
+      FILE_PATH.TRAINING_CSV,
+      Util.toCSV(
+        [...featureNames, 'Label'],
+        trainingSamples.map(s => [...s.point.coordArray, s.label])
+      )
+    )
+    fs.writeFileSync(
+      FILE_PATH.TESTING_CSV,
+      Util.toCSV(
+        [...featureNames, 'Label'],
+        testingSamples.map(s => [...s.point.coordArray, s.label])
+      )
+    )
+
+    // fs.writeFileSync(FILE_PATH.FEATURES_TS, `export const features=${features};`)
     fs.writeFileSync(FILE_PATH.TRAINING_TS, `export const training=${training};`)
     fs.writeFileSync(FILE_PATH.TESTING_TS, `export const testing=${testing};`)
 
@@ -213,7 +228,7 @@ export default class MLCron {
         ctx.fillRect(x, y, 1, 1)
       }
 
-      printProgress(x + 1, canvas.width);
+      printProgress(x + 1, canvas.width)
     }
 
     const buffer = canvas.toBuffer('image/png')

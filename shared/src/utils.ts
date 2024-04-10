@@ -30,3 +30,12 @@ export const isTestingSample = (sample: ISample | ITestingSample): sample is ITe
   }
   return false
 }
+
+export const toCSV = (headers: string[], rows: any[][]) => {
+  let str = headers.join(',') + '\n'
+  for (const row of rows) {
+    str += row.join(',') + '\n'
+  }
+
+  return str
+}
