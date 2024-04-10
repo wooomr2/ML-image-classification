@@ -1,11 +1,11 @@
-import { ISample } from "shared";
+import { ISample, ITestingSample, Util } from "shared";
 
 const flaggedUsers = [1663882102141, 1663900040545, 1664485938220];
 
 export const createRow = (
   container: HTMLDivElement,
   studentName: string,
-  samples: ISample[],
+  samples: ISample[] | ITestingSample[],
   handleClick?: (sample: ISample | null, doScroll?: boolean) => void
 ) => {
   const row = document.createElement("div");
@@ -26,6 +26,13 @@ export const createRow = (
       sampleContainer.onclick = () => handleClick(sample, false);
     }
     sampleContainer.classList.add("sampleContainer");
+    if (Util.isTestingSample(sample)) {
+      if (sample.correct) {
+        sampleContainer.style.backgroundColor = "lightgreen";
+      } else {
+        sampleContainer.style.backgroundColor = "lightcoral";
+      }
+    }
 
     const sampleLabel = document.createElement("div");
     sampleLabel.innerHTML = label;

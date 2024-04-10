@@ -14,6 +14,7 @@ import {
   normalizePoints,
 } from 'shared'
 import { printProgress } from '../../utils/process.util'
+import { PRE_DEFINES } from '../../const'
 
 // 주의:: node-canvas의 CanvasRenderingContext2D를 DOM의 CanvasRenderingContext2D로 type-casting해서 사용중
 const canvas = createCanvas(400, 400)
@@ -113,25 +114,51 @@ export default class MLCron {
   static async feature_extractor() {
     console.log('STEP3 - Feature Extracting ...')
 
-    const featureFuncs = Feature.inUse.map(f => f.function)
-
     const samples = JSON.parse(fs.readFileSync(FILE_PATH.SAMPLES_JSON, { encoding: 'utf-8' })) as ISample[]
     for (const sample of samples) {
       const data = fs.readFileSync(`${FILE_PATH.JSON_DIR}/${sample.id}.json`, { encoding: 'utf-8' })
 
       const paths = JSON.parse(data) as Path[]
 
-      sample.point = new Point(featureFuncs[0](paths), featureFuncs[1](paths))
+      const results = Feature.inUse.map(f => f.function(paths))
+      sample.point = new Point(results[0], results[1])
     }
 
-    const minMax = normalizePoints(samples.map(s => s.point))
+    const trainingSamples: ISample[] = []
+    const testingSamples: ISample[] = []
+    {
+      const trainingAmount = samples.length * PRE_DEFINES.TRAINIG_RATIO
 
-    ctx.getImageData(0, 0, 400, 400)
+      for (let i = 0; i < samples.length; i++) {
+        if (i < trainingAmount) {
+          trainingSamples.push(samples[i])
+        } else {
+          testingSamples.push(samples[i])
+        }
+      }
+    }
 
-    const features = JSON.stringify({ featureNames: Feature.inUse.map(f => f.name), samples: samples })
+    // trainig-set의 minMax를 기준으로 testing-set을 normalize 한다.
+    const minMax = normalizePoints(trainingSamples.map(s => s.point))
+    normalizePoints(
+      testingSamples.map(s => s.point),
+      minMax
+    )
+
+    const featureNames = Feature.inUse.map(f => f.name)
+
+    const features = JSON.stringify({ featureNames: featureNames, samples: samples })
+    const training = JSON.stringify({ featureNames: featureNames, samples: trainingSamples })
+    const testing = JSON.stringify({ featureNames: featureNames, samples: testingSamples })
 
     fs.writeFileSync(FILE_PATH.FEATURES_JSON, features)
-    fs.writeFileSync(FILE_PATH.WEB_FEATURES_TS, `export const features=${features};`)
+    fs.writeFileSync(FILE_PATH.TRAINING_JSON, training)
+    fs.writeFileSync(FILE_PATH.TESTING_JSON, testing)
+
+    fs.writeFileSync(FILE_PATH.FEATURES_TS, `export const features=${features};`)
+    fs.writeFileSync(FILE_PATH.TRAINING_TS, `export const training=${training};`)
+    fs.writeFileSync(FILE_PATH.TESTING_TS, `export const testing=${testing};`)
+
     fs.writeFileSync(FILE_PATH.MIN_MAX_TS, `export const minMax=${JSON.stringify(minMax)};`)
 
     console.log('STEP3 - Feature Extraction DONE.')

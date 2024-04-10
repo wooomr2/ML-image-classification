@@ -6,3 +6,7 @@ export const resCode = {
 export const resMessage = {
   InternalServerError: 'Internal Server Error',
 }
+
+export const PRE_DEFINES = {
+  TRAINIG_RATIO: 0.5,
+}

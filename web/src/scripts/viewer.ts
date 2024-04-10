@@ -3,31 +3,80 @@ import { Graphics } from "@/chart/graphics";
 import { IChartOptions } from "@/chart/types";
 import { createRow } from "@/components/display";
 import { SketchPad } from "@/components/sketchPad";
-import { features } from "@/data/features";
 import { minMax } from "@/data/minMax";
+import { testing } from "@/data/testing";
+import { training } from "@/data/training";
 import "@/styles/style.css";
-import { Feature, ISample, Path, Point, Util, getNearestIndices, normalizePoints } from "shared";
+import {
+  Feature,
+  ISample,
+  ITestingSample,
+  Path,
+  Point,
+  Util,
+  getNearestIndices,
+  normalizePoints,
+} from "shared";
 
 const container = document.getElementById("container") as HTMLDivElement;
 const chartContainer = document.getElementById("chartContainer") as HTMLDivElement;
 const inputContainer = document.getElementById("inputContainer") as HTMLDivElement;
 const predictedContainer = document.getElementById("predictedContainer") as HTMLDivElement;
 const toggleButton = document.getElementById("toggleButton") as HTMLButtonElement;
+const statistics = document.getElementById("statistics") as HTMLDivElement;
 
 toggleButton.addEventListener("click", toggleInput);
 
-const { featureNames, samples: rawSamples } = features;
-const samples = rawSamples.map((s) => ({ ...s, point: new Point(s.point.x, s.point.y) }));
+const featureNames = training.featureNames;
+const trainingSamples: ISample[] = training.samples.map((s) => ({
+  ...s,
+  point: new Point(s.point.x, s.point.y),
+}));
 
-const groups = Util.groupBy(samples, "student_id");
+const k = 50;
+let totalCount = 0;
+let correctCount = 0;
 
-for (const student_id in groups) {
-  const groupSamples = groups[student_id];
+const testingSamples: ITestingSample[] = testing.samples.map((s) => {
+  const point = new Point(s.point.x, s.point.y);
+  const { label } = classify(point);
+  const isCorrect = s.label == label;
 
-  // student_id로 groupBy 되었으니까 그룹 내 student_name은 모두 같음
-  const { student_name } = groupSamples[0];
+  totalCount++;
+  correctCount += isCorrect ? 1 : 0;
 
-  createRow(container, student_name, groupSamples, handleClick);
+  return {
+    ...s,
+    label: label ?? "?",
+    point: point,
+    truth: s.label,
+    correct: isCorrect,
+  };
+});
+
+statistics.innerHTML = `<b>Accuracy:</b> ${correctCount}/${totalCount}(${Util.formatPercent(
+  correctCount / totalCount
+)})`;
+
+// display samples
+{
+  const trainingGroups = Util.groupBy(trainingSamples, "student_id");
+  for (const student_id in trainingGroups) {
+    const groupSamples = trainingGroups[student_id];
+
+    createRow(container, groupSamples[0].student_name, groupSamples, handleClick);
+  }
+
+  const subtitle = document.createElement("h2");
+  subtitle.innerHTML = "Testing Samples";
+  container.appendChild(subtitle);
+
+  const testingGroups = Util.groupBy(testingSamples, "student_id");
+  for (const student_id in testingGroups) {
+    const groupSamples = testingGroups[student_id];
+
+    createRow(container, groupSamples[0].student_name, groupSamples, handleClick);
+  }
 }
 
 const options: IChartOptions = {
@@ -42,13 +91,14 @@ const options: IChartOptions = {
     guitar: { color: "blue", text: "🎸" },
     pencil: { color: "magenta", text: "✏️" },
     clock: { color: "lightgray", text: "🕒" },
+    "?": { color: "red", text: "❓" },
   },
   iconType: "image",
 };
 
 Graphics.generateImages(options.styles);
 
-const chart = new Chart(chartContainer, samples, options, handleClick);
+const chart = new Chart(chartContainer, trainingSamples, options, handleClick);
 const sketchPad = new SketchPad(inputContainer, onDrawingUpdate, options.size - 50);
 sketchPad.canvas.style.cssText += "outline:10000px solid rgba(0,0,0,0.7);";
 
@@ -95,10 +145,10 @@ function onDrawingUpdate(paths: Path[]) {
 }
 
 function classify(point: Point) {
-  const samplePoints = samples.map((s) => s.point);
-  const nearestIndices = getNearestIndices(point, samplePoints, 10);
+  const samplePoints = trainingSamples.map((s) => s.point);
+  const nearestIndices = getNearestIndices(point, samplePoints, k);
 
-  const nearestSamples = nearestIndices.map((i) => samples[i]);
+  const nearestSamples = nearestIndices.map((i) => trainingSamples[i]);
   const labels = nearestSamples.map((s) => s.label);
 
   const counts: Record<string, number> = {};
