@@ -4,20 +4,24 @@ import {
   Draw,
   FILE_PATH,
   Feature,
+  IFeatures,
   IMAGE_LABELS,
+  IMAGE_STYLES,
   IPreProcessedData,
   IRawData,
   ISample,
+  KNN,
   Path,
   Point,
   TLabel,
+  Util,
   normalizePoints,
 } from 'shared'
 import { printProgress } from '../../utils/process.util'
-import { PRE_DEFINES } from '../../const'
+import { ML_CONSTANTS } from '../../const'
 
 // 주의:: node-canvas의 CanvasRenderingContext2D를 DOM의 CanvasRenderingContext2D로 type-casting해서 사용중
-const canvas = createCanvas(400, 400)
+const canvas = createCanvas(ML_CONSTANTS.DEFAULT_CANVAS_SIZE, ML_CONSTANTS.DEFAULT_CANVAS_SIZE)
 const ctx = canvas.getContext('2d') as unknown as CanvasRenderingContext2D
 
 export default class MLCron {
@@ -25,6 +29,7 @@ export default class MLCron {
     await MLCron.preprocess_rawdata()
     await MLCron.generate_dataset()
     await MLCron.feature_extractor()
+    await MLCron.evaluate_knn()
   }
 
   static async preprocess_rawdata() {
@@ -85,7 +90,6 @@ export default class MLCron {
 
           fs.writeFileSync(`${FILE_PATH.JSON_DIR}/${id}.json`, JSON.stringify(paths))
 
-          // TODO:: data 폴더에 이미지 생성은 없어도 될듯. 추후 삭제
           MLCron.#generateImageFile(`${FILE_PATH.IMG_DIR}/${id}.png`, paths)
           MLCron.#generateImageFile(`${FILE_PATH.WEB_IMG_DIR}/${id}.png`, paths)
 
@@ -127,7 +131,7 @@ export default class MLCron {
     const trainingSamples: ISample[] = []
     const testingSamples: ISample[] = []
     {
-      const trainingAmount = samples.length * PRE_DEFINES.TRAINIG_RATIO
+      const trainingAmount = samples.length * ML_CONSTANTS.TRAINIG_RATIO
 
       for (let i = 0; i < samples.length; i++) {
         if (i < trainingAmount) {
@@ -162,5 +166,58 @@ export default class MLCron {
     fs.writeFileSync(FILE_PATH.MIN_MAX_TS, `export const minMax=${JSON.stringify(minMax)};`)
 
     console.log('STEP3 - Feature Extraction DONE.')
+  }
+
+  static async evaluate_knn() {
+    console.log('STEP4 - KNN Evaluation ...')
+
+    const { samples: trainingSamples } = JSON.parse(
+      fs.readFileSync(FILE_PATH.TRAINING_JSON, { encoding: 'utf-8' })
+    ) as IFeatures
+
+    const kNN = new KNN(trainingSamples, ML_CONSTANTS.K)
+
+    const { samples: testingSamples } = JSON.parse(
+      fs.readFileSync(FILE_PATH.TESTING_JSON, { encoding: 'utf-8' })
+    ) as IFeatures
+
+    let totalCount = 0
+    let correctCount = 0
+    for (const sample of testingSamples) {
+      const { label } = kNN.predict(sample.point)
+      const isCorrect = sample.label == label
+
+      correctCount += isCorrect ? 1 : 0
+      totalCount++
+    }
+
+    MLCron.#generateDecisionBoundary(kNN)
+
+    console.log(
+      `STEP4 - Done. ACCURACY: ${correctCount}/${totalCount}(${Util.formatPercent(correctCount / totalCount)})`
+    )
+  }
+
+  static #generateDecisionBoundary(classifier: KNN) {
+    console.log('Generating Decision Boundary ...')
+    canvas.width = ML_CONSTANTS.DECISION_BOUNDARY_SIZE
+    canvas.height = ML_CONSTANTS.DECISION_BOUNDARY_SIZE
+    ctx.clearRect(0, 0, canvas.width, canvas.height)
+
+    for (let x = 0; x < canvas.width; x++) {
+      for (let y = 0; y < canvas.height; y++) {
+        const point = new Point(x / canvas.width, 1 - y / canvas.height)
+        const { label } = classifier.predict(point)
+
+        ctx.fillStyle = IMAGE_STYLES[label].color
+        ctx.fillRect(x, y, 1, 1)
+      }
+
+      printProgress(x + 1, canvas.width);
+    }
+
+    const buffer = canvas.toBuffer('image/png')
+    fs.writeFileSync(FILE_PATH.DECISION_BOUNDARY_IMG, buffer)
+    fs.writeFileSync(FILE_PATH.WEB_DECISION_BOUNDARY_IMG, buffer)
   }
 }

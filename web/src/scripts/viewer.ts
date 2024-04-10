@@ -3,18 +3,20 @@ import { Graphics } from "@/chart/graphics";
 import { IChartOptions } from "@/chart/types";
 import { createRow } from "@/components/display";
 import { SketchPad } from "@/components/sketchPad";
+import { PUBLIC_SOURCE } from "@/const";
 import { minMax } from "@/data/minMax";
 import { testing } from "@/data/testing";
 import { training } from "@/data/training";
 import "@/styles/style.css";
 import {
   Feature,
+  IMAGE_STYLES,
   ISample,
   ITestingSample,
+  KNN,
   Path,
   Point,
   Util,
-  getNearestIndices,
   normalizePoints,
 } from "shared";
 
@@ -34,12 +36,14 @@ const trainingSamples: ISample[] = training.samples.map((s) => ({
 }));
 
 const k = 50;
+const kNN = new KNN(trainingSamples, k);
 let totalCount = 0;
 let correctCount = 0;
 
 const testingSamples: ITestingSample[] = testing.samples.map((s) => {
   const point = new Point(s.point.x, s.point.y);
-  const { label } = classify(point);
+
+  const { label } = kNN.predict(point);
   const isCorrect = s.label == label;
 
   totalCount++;
@@ -79,21 +83,15 @@ statistics.innerHTML = `<b>Accuracy:</b> ${correctCount}/${totalCount}(${Util.fo
   }
 }
 
+const bg = new Image();
+bg.src = PUBLIC_SOURCE.DECISION_BOUNDARY;
+
 const options: IChartOptions = {
   size: 400,
   axesLabels: featureNames,
-  styles: {
-    car: { color: "gray", text: "🚗" },
-    fish: { color: "red", text: "🐠" },
-    house: { color: "yellow", text: "🏠" },
-    tree: { color: "green", text: "🌳" },
-    bicycle: { color: "cyan", text: "🚲" },
-    guitar: { color: "blue", text: "🎸" },
-    pencil: { color: "magenta", text: "✏️" },
-    clock: { color: "lightgray", text: "🕒" },
-    "?": { color: "red", text: "❓" },
-  },
+  styles: IMAGE_STYLES,
   iconType: "image",
+  bg: bg,
 };
 
 Graphics.generateImages(options.styles);
@@ -128,12 +126,12 @@ function handleClick(sample: ISample | null, doScroll = true) {
 }
 
 function onDrawingUpdate(paths: Path[]) {
-  const featureFuncs = Feature.inUse.map((f) => f.function);
-
-  const point = new Point(featureFuncs[0](paths), featureFuncs[1](paths));
+  const results = Feature.inUse.map((f) => f.function(paths));
+  const point = new Point(results[0], results[1]);
+  
   normalizePoints([point], minMax);
 
-  const { label, nearestSamples } = classify(point);
+  const { label, nearestSamples } = kNN.predict(point);
 
   if (paths.length) {
     predictedContainer.innerHTML = `Is it a ${label}?`;
@@ -142,24 +140,6 @@ function onDrawingUpdate(paths: Path[]) {
   }
 
   chart.showDynamicPoint(point, label, nearestSamples);
-}
-
-function classify(point: Point) {
-  const samplePoints = trainingSamples.map((s) => s.point);
-  const nearestIndices = getNearestIndices(point, samplePoints, k);
-
-  const nearestSamples = nearestIndices.map((i) => trainingSamples[i]);
-  const labels = nearestSamples.map((s) => s.label);
-
-  const counts: Record<string, number> = {};
-  for (const label of labels) {
-    counts[label] = (counts[label] || 0) + 1;
-  }
-  const max = Math.max(...Object.values(counts));
-
-  const label = labels.find((l) => counts[l] === max)!;
-
-  return { label: label, nearestSamples: nearestSamples };
 }
 
 function toggleInput() {

@@ -55,6 +55,7 @@ export class Chart {
     this.canvas.setAttribute("style", "background-color: white;");
 
     this.ctx = this.canvas.getContext("2d")!;
+    this.ctx.imageSmoothingEnabled = false;
 
     container.appendChild(this.canvas);
 
@@ -262,9 +263,18 @@ export class Chart {
       nearestSamples,
       dataBounds,
       pixelBounds,
+      margin,
+      dataTrans,
     } = this;
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // Decision Boundary Background Image
+    {
+      const topLeft = remapPoint(dataBounds, pixelBounds, new Point(0, 1));
+      const size = (canvas.width - 2 * margin) / dataTrans.scale ** 2;
+      ctx.drawImage(options.bg, topLeft.x, topLeft.y, size, size);
+    }
 
     ctx.globalAlpha = transparency;
 

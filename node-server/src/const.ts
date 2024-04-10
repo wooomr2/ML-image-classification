@@ -7,6 +7,9 @@ export const resMessage = {
   InternalServerError: 'Internal Server Error',
 }
 
-export const PRE_DEFINES = {
+export const ML_CONSTANTS = {
+  K: 50,
   TRAINIG_RATIO: 0.5,
+  DEFAULT_CANVAS_SIZE: 400,
+  DECISION_BOUNDARY_SIZE: 100,
 }

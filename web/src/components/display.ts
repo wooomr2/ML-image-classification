@@ -1,3 +1,4 @@
+import { PUBLIC_SOURCE } from "@/const";
 import { ISample, ITestingSample, Util } from "shared";
 
 const flaggedUsers = [1663882102141, 1663900040545, 1664485938220];
@@ -39,7 +40,7 @@ export const createRow = (
     sampleContainer.appendChild(sampleLabel);
 
     const img = document.createElement("img");
-    img.src = `img/${id}.png`;
+    img.src = `${PUBLIC_SOURCE.IMG_DIR}/${id}.png`;
     img.classList.add("thumb");
 
     if (flaggedUsers.includes(student_id)) {

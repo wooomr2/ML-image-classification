@@ -14,14 +14,31 @@ export const FILE_PATH = {
   TRAINING_JSON: dataDir + '/dataset/training.json',
   TESTING_JSON: dataDir + '/dataset/testing.json',
 
+  DECISION_BOUNDARY_IMG: dataDir + '/dataset/decision-boundary.png',
+
   // web
   SAMPLES_TS: webDir + '/src/data/samples.ts',
   FEATURES_TS: webDir + '/src/data/features.ts',
   TRAINING_TS: webDir + '/src/data/training.ts',
   TESTING_TS: webDir + '/src/data/testing.ts',
   MIN_MAX_TS: webDir + '/src/data/minMax.ts',
-
+  
+  
   WEB_IMG_DIR: webDir + '/public/img',
+  WEB_DECISION_BOUNDARY_IMG: webDir + '/public/decision-boundary.png',
 }
 
 export const IMAGE_LABELS = ['car', 'fish', 'house', 'tree', 'bicycle', 'guitar', 'pencil', 'clock'] as const
+
+export const IMAGE_STYLES = {
+  car: { color: 'gray', text: '🚗' },
+  fish: { color: 'red', text: '🐠' },
+  house: { color: 'yellow', text: '🏠' },
+  tree: { color: 'green', text: '🌳' },
+  bicycle: { color: 'cyan', text: '🚲' },
+  guitar: { color: 'blue', text: '🎸' },
+  pencil: { color: 'magenta', text: '✏️' },
+  clock: { color: 'lightgray', text: '🕒' },
+  //
+  '?': { color: 'red', text: '❓' },
+}

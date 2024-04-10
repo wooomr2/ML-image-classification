@@ -33,11 +33,16 @@ export interface ISample {
 
 export interface ITestingSample extends ISample {
   truth: string
-  // nearestSamples: ISample[]
+  //nearestSamples: ISample[]
   correct: boolean
 }
 
 export interface IFeatures {
   featureNames: string[]
   samples: ISample[]
+}
+
+export interface IPrediction {
+  label: string
+  nearestSamples: ISample[]
 }

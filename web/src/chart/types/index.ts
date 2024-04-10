@@ -8,4 +8,5 @@ export interface IChartOptions {
   axesLabels: string[];
   styles: IChartStyles;
   iconType: "image" | "text" | "point";
+  bg: HTMLImageElement;
 }

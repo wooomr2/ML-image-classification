@@ -28,4 +28,10 @@ router.get('/feature-extractor', async (req: Request, res: Response, next: NextF
   return res.json({ message: 'feature-extractor DONE' })
 })
 
+router.get('/evaluate/knn', async (req: Request, res: Response, next: NextFunction) => {
+  await MLCron.evaluate_knn()
+
+  return res.json({ message: 'knn evaluation DONE' })
+})
+
 export default router
