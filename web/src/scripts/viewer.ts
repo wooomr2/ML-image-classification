@@ -83,9 +83,6 @@ statistics.innerHTML = `<b>Accuracy:</b> ${correctCount}/${totalCount}(${Util.fo
   }
 }
 
-const bg = new Image();
-bg.src = PUBLIC_SOURCE.DECISION_BOUNDARY;
-
 const options: IChartOptions = {
   size: 480,
   axesLabels: featureNames,
