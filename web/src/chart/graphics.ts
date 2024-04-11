@@ -2,7 +2,7 @@ import { Point } from "shared";
 import { IChartStyles } from "./types";
 
 export class Graphics {
-  static generateImages(styles: IChartStyles, size = 10) {
+  static generateImages(styles: IChartStyles, size = 20) {
     for (const label in styles) {
       const style = styles[label];
       const canvas = document.createElement("canvas");

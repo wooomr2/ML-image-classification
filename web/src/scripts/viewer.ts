@@ -1,4 +1,5 @@
 import { Chart } from "@/chart/chart";
+import { Confusion } from "@/chart/confusion";
 import { Graphics } from "@/chart/graphics";
 import { IChartOptions } from "@/chart/types";
 import { createRow, toggleFlaggedSample } from "@/components/display";
@@ -10,6 +11,7 @@ import { training } from "@/data/training";
 import "@/styles/style.css";
 import {
   Feature,
+  IMAGE_LABELS,
   IMAGE_STYLES,
   ISample,
   ITestingSample,
@@ -22,12 +24,15 @@ import {
 
 const container = document.getElementById("container") as HTMLDivElement;
 const chartContainer = document.getElementById("chartContainer") as HTMLDivElement;
+const confusionContainer = document.getElementById("confusionContainer") as HTMLDivElement;
 const inputContainer = document.getElementById("inputContainer") as HTMLDivElement;
 const predictedContainer = document.getElementById("predictedContainer") as HTMLDivElement;
-const toggleButton = document.getElementById("toggleButton") as HTMLButtonElement;
+const toggleInputButton = document.getElementById("toggleInputButton") as HTMLButtonElement;
+const toggleOutputButton = document.getElementById("toggleOutputButton") as HTMLButtonElement;
 const statistics = document.getElementById("statistics") as HTMLDivElement;
 
-toggleButton.addEventListener("click", toggleInput);
+toggleInputButton.addEventListener("click", toggleInput);
+toggleOutputButton.addEventListener("click", toggleOutput);
 
 const featureNames = training.featureNames;
 const trainingSamples: ISample[] = training.samples.map((s) => ({
@@ -98,6 +103,7 @@ const options: IChartOptions = {
 Graphics.generateImages(options.styles);
 
 const chart = new Chart(chartContainer, trainingSamples, options, handleClick);
+const confusion = new Confusion(confusionContainer, testingSamples, [...IMAGE_LABELS], options);
 const sketchPad = new SketchPad(inputContainer, onDrawingUpdate, options.size - 50);
 sketchPad.canvas.style.cssText += "outline:10000px solid rgba(255,255,255,0.7);";
 
@@ -150,5 +156,13 @@ function toggleInput() {
   } else {
     inputContainer.style.display = "none";
     chart.hideDynamicPoint();
+  }
+}
+
+function toggleOutput() {
+  if (confusionContainer.style.display == "none") {
+    confusionContainer.style.display = "block";
+  } else {
+    confusionContainer.style.display = "none";
   }
 }
