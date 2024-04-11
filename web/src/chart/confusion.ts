@@ -30,18 +30,17 @@ export class Confusion {
 
     this.table = document.createElement("table");
     this.table.style.borderCollapse = "collapse";
-    this.table.style.marginLeft = this.cellSize + "px";
-    this.table.style.marginTop = this.cellSize + "px";
+    this.table.style.margin = this.cellSize / 2 + "px";
     container.appendChild(this.table);
 
     const topText = document.createElement("div");
     topText.innerHTML = "Predicted Class";
     topText.style.position = "absolute";
-    topText.style.fontSize = "x-large";
+    topText.style.fontSize = "large";
     topText.style.top = "0px";
     topText.style.left = "50%";
     topText.style.transform = "translate(-50%)";
-    topText.style.height = this.cellSize + "px";
+    topText.style.height = this.cellSize / 2 + "px";
     topText.style.display = "flex";
     topText.style.alignItems = "center";
     topText.style.marginLeft = this.cellSize / 2 + "px";
@@ -50,11 +49,11 @@ export class Confusion {
     const leftText = document.createElement("div");
     leftText.innerHTML = "True Class";
     leftText.style.position = "absolute";
-    leftText.style.fontSize = "x-large";
+    leftText.style.fontSize = "large";
     leftText.style.top = "50%";
     leftText.style.left = "0px";
     leftText.style.transform = "translate(-50%) rotate(-90deg)";
-    leftText.style.height = this.cellSize + "px";
+    leftText.style.height = this.cellSize / 2 + "px";
     leftText.style.display = "flex";
     leftText.style.alignItems = "center";
     leftText.style.marginLeft = this.cellSize / 2 + "px";
