@@ -1,4 +1,4 @@
-import { ISample, ITestingSample } from './types'
+import { ISample, ITestingSample } from '../types'
 
 export const formatNumber = (n: number, digit: number = 2): string => {
   return n.toFixed(digit)

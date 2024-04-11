@@ -1,4 +1,4 @@
-import { Path } from './types'
+import { Path } from '../types'
 
 export const getPathCount = (paths: Path[]): number => {
   return paths.length
