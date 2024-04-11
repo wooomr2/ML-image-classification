@@ -1,7 +1,25 @@
 import { PUBLIC_SOURCE } from "@/const";
-import { ISample, ITestingSample, Util } from "shared";
+import { ISample, ITestingSample, Util, flaggedSampleIds, flaggedUserIds } from "shared";
 
-const flaggedUsers: number[] = [];
+/** Data Cleaner */
+export function toggleFlaggedSample(sample?: ISample) {
+  if (sample) {
+    const index = flaggedSampleIds.indexOf(sample.id);
+    if (index !== -1) {
+      flaggedSampleIds.splice(index, 1);
+    } else {
+      flaggedSampleIds.push(sample.id);
+    }
+    console.log(`flaggedSampleIds = ${JSON.stringify(flaggedSampleIds)}`);
+  }
+
+  document.querySelectorAll(".flagged").forEach((e) => e.classList.remove("flagged"));
+
+  for (const id of flaggedSampleIds) {
+    const el = document.getElementById(`sample_${id}`);
+    el?.classList.add("flagged");
+  }
+}
 
 export const createRow = (
   container: HTMLDivElement,
@@ -25,16 +43,22 @@ export const createRow = (
     sampleContainer.id = `sample_${id}`;
 
     if (handleClick) {
-      sampleContainer.onclick = () => handleClick(sample, false);
+      sampleContainer.onclick = (evt) => {
+        if (evt.ctrlKey) {
+          toggleFlaggedSample(sample);
+        } else {
+          handleClick(sample, false);
+        }
+      };
     }
 
     sampleContainer.classList.add("sampleContainer");
-    
+
     if (Util.isTestingSample(sample)) {
       if (sample.correct) {
         sampleContainer.style.backgroundColor = "mediumblue";
       } else {
-        sampleContainer.style.backgroundColor = "hsl(346.8 77.2% 49.8%)";
+        sampleContainer.style.backgroundColor = "lightcoral";
       }
     }
 
@@ -46,7 +70,7 @@ export const createRow = (
     img.src = `${PUBLIC_SOURCE.IMG_DIR}/${id}.png`;
     img.classList.add("thumb");
 
-    if (flaggedUsers.includes(student_id)) {
+    if (flaggedUserIds.includes(student_id)) {
       img.classList.add("blur");
     }
 

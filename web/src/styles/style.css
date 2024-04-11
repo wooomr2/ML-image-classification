@@ -38,6 +38,23 @@ button:disabled:hover {
   cursor: default;
 }
 
+.thumb {
+  width: 100%;
+  filter: invert(1);
+}
+
+.blur {
+  filter: invert(1) blur(5px);
+}
+
+.emphasize {
+  background-color: #aa0 !important;
+}
+
+.flagged {
+  background-color: #f00 !important;
+}
+
 .row {
   display: flex;
   align-items: center;
@@ -45,11 +62,6 @@ button:disabled:hover {
 }
 .row:nth-child(even) {
   background-color: #000;
-}
-
-.thumb {
-  width: 100%;
-  filter: invert(1);
 }
 
 .rowLabel {
@@ -70,14 +82,7 @@ button:disabled:hover {
   outline: 2px solid #f60;
   border-radius: 5px;
   text-transform: capitalize;
-}
-
-.blur {
-  filter: invert(1) blur(5px);
-}
-
-.emphasize {
-  background-color: #aa0 !important;
+  max-width: 8%;
 }
 
 input,
@@ -138,4 +143,24 @@ input,
 #statistics {
   font-size: 20px;
   padding: 20px;
+}
+
+.infoButton {
+  color: red;
+  cursor: pointer;
+}
+
+.infoButton:hover .tooltipText {
+  visibility: visible;
+}
+
+.tooltipText {
+  color: white;
+  background-color: red;
+  position: absolute;
+  visibility: hidden;
+  font-size: small;
+  border-radius: 6px;
+  padding: 6px;
+  font-weight: normal;
 }

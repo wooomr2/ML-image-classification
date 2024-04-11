@@ -15,6 +15,8 @@ import {
   Point,
   TLabel,
   Util,
+  flaggedSampleIds,
+  flaggedUserIds,
   normalizePoints,
 } from 'shared'
 import { ML_CONSTANTS } from '../../const'
@@ -35,11 +37,22 @@ export default class MLCron {
   static async preprocess_rawdata() {
     console.log('STEP1 - PRE-PROCESSING RAW DATA...')
 
+    {
+      if (fs.existsSync(FILE_PATH.PRE_PROCESSED_DIR)) {
+        fs.rmSync(FILE_PATH.PRE_PROCESSED_DIR, { recursive: true })
+      }
+      fs.mkdirSync(FILE_PATH.PRE_PROCESSED_DIR)
+    }
+
     const fileNames = fs.readdirSync(FILE_PATH.RAW_DIR)
     for (const fileName of fileNames) {
       const content = fs.readFileSync(`${FILE_PATH.RAW_DIR}/${fileName}`, { encoding: 'utf-8' })
-
       const { session, student, drawings } = JSON.parse(content) as IRawData
+
+      if (flaggedUserIds.includes(session)) {
+        console.info(`DATA CLEANING:: user session: ${session}`)
+        continue
+      }
 
       const newDrawings: Record<TLabel, Path[]> = {
         car: [],
@@ -70,9 +83,20 @@ export default class MLCron {
   static async generate_dataset() {
     console.log('STEP2 - GENERATING DATASET ...')
 
+    {
+      if (fs.existsSync(FILE_PATH.DATASET_DIR)) {
+        fs.rmSync(FILE_PATH.DATASET_DIR, { recursive: true })
+      }
+
+      fs.mkdirSync(FILE_PATH.DATASET_DIR)
+      fs.mkdirSync(FILE_PATH.IMG_DIR)
+      fs.mkdirSync(FILE_PATH.JSON_DIR)
+      fs.mkdirSync(FILE_PATH.MODEL_DIR)
+    }
+
     const samples: Omit<ISample, 'point'>[] = []
     {
-      let id = 1
+      let id = 0
       const fileNames = fs.readdirSync(FILE_PATH.PRE_PROCESSED_DIR)
 
       for (const fileName of fileNames) {
@@ -81,6 +105,13 @@ export default class MLCron {
         const { session, student, drawings } = JSON.parse(content) as IPreProcessedData
 
         for (const [label, paths] of Object.entries(drawings)) {
+          id++
+
+          if (flaggedSampleIds.includes(id)) {
+            console.info(` DATA CLEANING:: skip SampleId: ${id}`)
+            continue
+          }
+
           samples.push({
             id: id,
             label: label,
@@ -94,8 +125,6 @@ export default class MLCron {
           MLCron.#generateImageFile(`${FILE_PATH.WEB_IMG_DIR}/${id}.png`, paths)
 
           printProgress(id, fileNames.length * IMAGE_LABELS.length)
-
-          id++
         }
       }
     }

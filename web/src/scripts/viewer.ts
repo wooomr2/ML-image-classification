@@ -1,7 +1,7 @@
 import { Chart } from "@/chart/chart";
 import { Graphics } from "@/chart/graphics";
 import { IChartOptions } from "@/chart/types";
-import { createRow } from "@/components/display";
+import { createRow, toggleFlaggedSample } from "@/components/display";
 import { SketchPad } from "@/components/sketchPad";
 import { PUBLIC_SOURCE } from "@/const";
 import { minMax } from "@/data/minMax";
@@ -81,6 +81,8 @@ statistics.innerHTML = `<b>Accuracy:</b> ${correctCount}/${totalCount}(${Util.fo
 
     createRow(container, groupSamples[0].student_name, groupSamples, handleClick);
   }
+
+  toggleFlaggedSample();
 }
 
 const options: IChartOptions = {
