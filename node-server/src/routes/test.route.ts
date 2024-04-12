@@ -1,6 +1,6 @@
 import express, { NextFunction, Request, Response } from 'express'
-import { asyncRouter } from '../middlewares/asyncWrapper'
 import MLCron from '../batch/crons/ml.cron'
+import { asyncRouter } from '../middlewares/async-wrapper'
 
 const router = asyncRouter(express.Router())
 
@@ -8,12 +8,6 @@ router.get('/run', async (req: Request, res: Response, next: NextFunction) => {
   await MLCron.run()
 
   return res.json({ message: 'run DONE' })
-})
-
-router.get('/preprocess', async (req: Request, res: Response, next: NextFunction) => {
-  await MLCron.preprocess_rawdata()
-
-  return res.json({ message: 'preprocess DONE' })
 })
 
 router.get('/generate-dataset', async (req: Request, res: Response, next: NextFunction) => {

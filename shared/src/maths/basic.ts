@@ -1,16 +1,44 @@
-import { Point } from '../primitives/point'
-import { IBoundary } from '../types'
+import { IBoundary, Point } from '../types'
+
+export const equals = (p1: Point, p2: Point): boolean => {
+  if (p1.length !== p2.length) {
+    return false
+  }
+
+  for (let i = 0; i < p1.length; i++) {
+    if (p1[i] !== p2[i]) {
+      return false
+    }
+  }
+
+  return true
+}
 
 export const add = (p1: Point, p2: Point): Point => {
-  return new Point(p1.x + p2.x, p1.y + p2.y)
+  const point: Point = []
+  for (let i = 0; i < p1.length; i++) {
+    point[i] = p1[i] + p2[i]
+  }
+
+  return point
 }
 
 export const subtract = (p1: Point, p2: Point): Point => {
-  return new Point(p1.x - p2.x, p1.y - p2.y)
+  const point: Point = []
+  for (let i = 0; i < p1.length; i++) {
+    point[i] = p1[i] - p2[i]
+  }
+
+  return point
 }
 
 export const scale = (p: Point, scaler: number): Point => {
-  return new Point(p.x * scaler, p.y * scaler)
+  const point: Point = []
+  for (let i = 0; i < p.length; i++) {
+    point[i] = p[i] * scaler
+  }
+
+  return point
 }
 
 // v = a + (b - a) * t
@@ -29,14 +57,19 @@ export const remap = (a0: number, b0: number, a1: number, b1: number, v: number)
 }
 
 export const remapPoint = (oldBounds: IBoundary, newBounds: IBoundary, point: Point): Point => {
-  return new Point(
-    remap(oldBounds.left, oldBounds.right, newBounds.left, newBounds.right, point.x),
-    remap(oldBounds.top, oldBounds.bottom, newBounds.top, newBounds.bottom, point.y)
-  )
+  return [
+    remap(oldBounds.left, oldBounds.right, newBounds.left, newBounds.right, point[0]),
+    remap(oldBounds.top, oldBounds.bottom, newBounds.top, newBounds.bottom, point[1]),
+  ]
 }
 
 export const distance = (p1: Point, p2: Point): number => {
-  return Math.sqrt((p1.x - p2.x) ** 2 + (p1.y - p2.y) ** 2)
+  let sqDist = 0
+  for (let i = 0; i < p1.length; i++) {
+    sqDist += (p1[i] - p2[i]) ** 2
+  }
+
+  return Math.sqrt(sqDist)
 }
 
 export const getNearestIndex = (loc: Point, points: Point[]): number => {
@@ -67,24 +100,26 @@ export const getNearestIndices = (loc: Point, points: Point[], k = 1): number[] 
 
 export const normalizePoints = (points: Point[], minMax?: { min: number[]; max: number[] }) => {
   let min: number[], max: number[]
+  const dimension = points[0].length
 
   if (minMax) {
     min = minMax.min
     max = minMax.max
   } else {
-    min = points[0].coordArray
-    max = points[0].coordArray
+    min = [...points[0]]
+    max = [...points[0]]
     for (let i = 1; i < points.length; i++) {
-      for (let j = 0; j < Point.dimension(); j++) {
-        min[j] = Math.min(min[j], points[i].coordArray[j])
-        max[j] = Math.max(max[j], points[i].coordArray[j])
+      for (let j = 0; j < dimension; j++) {
+        min[j] = Math.min(min[j], points[i][j])
+        max[j] = Math.max(max[j], points[i][j])
       }
     }
   }
 
-  for (const point of points) {
-    point.x = invLerp(min[0], max[0], point.x)
-    point.y = invLerp(min[1], max[1], point.y)
+  for (let i = 0; i < points.length; i++) {
+    for (let j = 0; j < dimension; j++) {
+      points[i][j] = invLerp(min[0], max[0], points[i][j])
+    }
   }
 
   return { min, max }

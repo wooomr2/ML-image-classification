@@ -1,5 +1,4 @@
 import { IMAGE_LABELS } from './const'
-import { Point } from './primitives/point'
 
 export interface IBoundary {
   left: number
@@ -8,21 +7,15 @@ export interface IBoundary {
   bottom: number
 }
 
+export type Point = number[]
 export type Path = Point[]
 
 export type TLabel = (typeof IMAGE_LABELS)[number]
 export interface IRawData {
   session: number
   student: string
-  drawings: Record<TLabel, [number, number][][]>
-}
-
-export interface IPreProcessedData {
-  session: number
-  student: string
   drawings: Record<TLabel, Path[]>
 }
-
 export interface ISample {
   id: number
   label: string

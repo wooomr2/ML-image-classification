@@ -1,4 +1,4 @@
-import { PUBLIC_SOURCE } from "@/const";
+import { PUBLIC_SOURCE } from "@/constants";
 import { ISample, ITestingSample, Util, flaggedSampleIds, flaggedUserIds } from "shared";
 
 /** Data Cleaner */

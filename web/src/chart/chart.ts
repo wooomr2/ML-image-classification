@@ -5,6 +5,7 @@ import {
   Util,
   add,
   distance,
+  equals,
   getNearestIndex,
   lerp,
   remapPoint,
@@ -89,14 +90,14 @@ export class Chart {
     this.margin = options.size * 0.1;
 
     this.dataTrans = {
-      offset: new Point(0, 0),
+      offset: [0, 0],
       scale: 1,
     };
 
     this.dragInfo = {
-      start: new Point(0, 0),
-      end: new Point(0, 0),
-      offset: new Point(0, 0),
+      start: [0, 0],
+      end: [0, 0],
+      offset: [0, 0],
       dragging: false,
     };
 
@@ -133,8 +134,8 @@ export class Chart {
 
       dragInfo.start = dataLoc;
       dragInfo.dragging = true;
-      dragInfo.end = new Point(0, 0);
-      dragInfo.offset = new Point(0, 0);
+      dragInfo.end = [0, 0];
+      dragInfo.offset = [0, 0];
     };
 
     canvas.onmousemove = (evt) => {
@@ -178,9 +179,6 @@ export class Chart {
       const direction = Math.sign(evt.deltaY);
       const step = 0.02;
 
-      // dataTrans.scale += direction * step;
-      // dataTrans.scale = Math.max(step, Math.min(2, dataTrans.scale));
-
       const scale = 1 + direction * step;
       dataTrans.scale *= scale;
 
@@ -193,7 +191,7 @@ export class Chart {
     };
 
     canvas.onclick = () => {
-      if (!dragInfo.offset.equals(new Point(0, 0))) {
+      if (!equals(dragInfo.offset, [0, 0])) {
         return;
       }
 
@@ -219,28 +217,25 @@ export class Chart {
   #updateDataBounds(offset: Point, scale: number) {
     const { dataBounds, defaultDataBounds: defaults } = this;
 
-    dataBounds.left = defaults.left + offset.x;
-    dataBounds.right = defaults.right + offset.x;
-    dataBounds.top = defaults.top + offset.y;
-    dataBounds.bottom = defaults.bottom + offset.y;
+    dataBounds.left = defaults.left + offset[0];
+    dataBounds.right = defaults.right + offset[0];
+    dataBounds.top = defaults.top + offset[1];
+    dataBounds.bottom = defaults.bottom + offset[1];
 
-    const center = new Point(
-      dataBounds.left + dataBounds.right / 2,
-      dataBounds.top + dataBounds.bottom / 2
-    );
+    const center = [dataBounds.left + dataBounds.right / 2, dataBounds.top + dataBounds.bottom / 2];
 
     // R^2 Space이므로 scale^2
-    dataBounds.left = lerp(center.x, dataBounds.left, scale ** 2);
-    dataBounds.right = lerp(center.x, dataBounds.right, scale ** 2);
-    dataBounds.top = lerp(center.y, dataBounds.top, scale ** 2);
-    dataBounds.bottom = lerp(center.y, dataBounds.bottom, scale ** 2);
+    dataBounds.left = lerp(center[0], dataBounds.left, scale ** 2);
+    dataBounds.right = lerp(center[0], dataBounds.right, scale ** 2);
+    dataBounds.top = lerp(center[1], dataBounds.top, scale ** 2);
+    dataBounds.bottom = lerp(center[1], dataBounds.bottom, scale ** 2);
   }
 
   #getMouse(evt: MouseEvent, dataSpace = false): Point {
     const { canvas, pixelBounds, defaultDataBounds } = this;
 
     const rect = canvas.getBoundingClientRect();
-    const pixelLoc = new Point(evt.clientX - rect.left, evt.clientY - rect.top);
+    const pixelLoc = [evt.clientX - rect.left, evt.clientY - rect.top];
 
     if (dataSpace) {
       const dataLoc = remapPoint(pixelBounds, defaultDataBounds, pixelLoc);
@@ -252,8 +247,8 @@ export class Chart {
 
   #getDataBounds(): IBoundary {
     const { samples } = this;
-    const xs = samples.map((s) => s.point.x);
-    const ys = samples.map((s) => s.point.y);
+    const xs = samples.map((s) => s.point[0]);
+    const ys = samples.map((s) => s.point[1]);
 
     const minX = Math.min(...xs);
     const maxX = Math.max(...xs);
@@ -293,14 +288,14 @@ export class Chart {
 
     // Decision Boundary Background Image:: 로드 후 그려야함
     if (backgroundImage) {
-      const topLeft = remapPoint(dataBounds, pixelBounds, new Point(0, 1));
-      const bottomRight = remapPoint(dataBounds, pixelBounds, new Point(1, 0));
+      const topLeft = remapPoint(dataBounds, pixelBounds, [0, 1]);
+      const bottomRight = remapPoint(dataBounds, pixelBounds, [1, 0]);
       ctx.drawImage(
         backgroundImage,
-        topLeft.x,
-        topLeft.y,
-        bottomRight.x - topLeft.x,
-        bottomRight.y - topLeft.y
+        topLeft[0],
+        topLeft[1],
+        bottomRight[0] - topLeft[0],
+        bottomRight[1] - topLeft[1]
       );
     }
 
@@ -361,8 +356,8 @@ export class Chart {
     for (const nSample of nearestSamples) {
       const point = remapPoint(dataBounds, pixelBounds, nSample.point);
       this.overlayCtx.beginPath();
-      this.overlayCtx.moveTo(pixelLoc.x, pixelLoc.y);
-      this.overlayCtx.lineTo(point.x, point.y);
+      this.overlayCtx.moveTo(pixelLoc[0], pixelLoc[1]);
+      this.overlayCtx.lineTo(point[0], point[1]);
       this.overlayCtx.stroke();
     }
   }
@@ -371,7 +366,7 @@ export class Chart {
     const { overlayCtx, dataBounds, pixelBounds, margin } = this;
     const pLoc = remapPoint(dataBounds, pixelBounds, sample.point);
 
-    const gradient = overlayCtx.createRadialGradient(pLoc.x, pLoc.y, 0, pLoc.x, pLoc.y, margin);
+    const gradient = overlayCtx.createRadialGradient(pLoc[0], pLoc[1], 0, pLoc[0], pLoc[1], margin);
 
     gradient.addColorStop(0, color);
     // white: rgb(0,0,0), black: rgb(255,255,255)
@@ -398,7 +393,7 @@ export class Chart {
     // x-axis label
     Graphics.drawText(ctx, {
       text: options.axesLabels[0],
-      loc: new Point(canvas.width / 2, bottom + margin / 2),
+      loc: [canvas.width / 2, bottom + margin / 2],
       size: margin * 0.6,
     });
 
@@ -409,7 +404,7 @@ export class Chart {
     // y-axis label
     Graphics.drawText(ctx, {
       text: options.axesLabels[1],
-      loc: new Point(0, 0),
+      loc: [0, 0],
       size: margin * 0.6,
     });
 
@@ -426,11 +421,11 @@ export class Chart {
     ctx.setLineDash([]);
 
     {
-      const dataMin: Point = remapPoint(pixelBounds, dataBounds, new Point(left, bottom));
+      const dataMin: Point = remapPoint(pixelBounds, dataBounds, [left, bottom]);
 
       Graphics.drawText(ctx, {
-        text: Util.formatNumber(dataMin.x, 2),
-        loc: new Point(left, bottom),
+        text: Util.formatNumber(dataMin[0], 2),
+        loc: [left, bottom],
         size: margin * 0.3,
         align: "left",
         vAlign: "top",
@@ -441,8 +436,8 @@ export class Chart {
       ctx.rotate(-Math.PI / 2);
 
       Graphics.drawText(ctx, {
-        text: Util.formatNumber(dataMin.y, 2),
-        loc: new Point(0, 0),
+        text: Util.formatNumber(dataMin[1], 2),
+        loc: [0, 0],
         size: margin * 0.3,
         align: "left",
         vAlign: "bottom",
@@ -452,11 +447,11 @@ export class Chart {
     }
 
     {
-      const dataMax = remapPoint(pixelBounds, dataBounds, new Point(right, top));
+      const dataMax = remapPoint(pixelBounds, dataBounds, [right, top]);
 
       Graphics.drawText(ctx, {
-        text: Util.formatNumber(dataMax.x, 2),
-        loc: new Point(right, bottom),
+        text: Util.formatNumber(dataMax[0], 2),
+        loc: [right, bottom],
         size: margin * 0.3,
         align: "right",
         vAlign: "top",
@@ -467,8 +462,8 @@ export class Chart {
       ctx.rotate(-Math.PI / 2);
 
       Graphics.drawText(ctx, {
-        text: Util.formatNumber(dataMax.y, 2),
-        loc: new Point(0, 0),
+        text: Util.formatNumber(dataMax[1], 2),
+        loc: [0, 0],
         size: margin * 0.3,
         align: "right",
         vAlign: "bottom",

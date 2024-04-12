@@ -100,10 +100,7 @@ export class SketchPad {
   #getPoint(evt: PointerEvent): Point {
     const rect = this.canvas.getBoundingClientRect();
 
-    const point = new Point(
-      Math.round(evt.clientX - rect.left),
-      Math.round(evt.clientY - rect.top)
-    );
+    const point = [Math.round(evt.clientX - rect.left), Math.round(evt.clientY - rect.top)];
 
     return point;
   }

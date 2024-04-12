@@ -1,6 +1,6 @@
 import { SketchPad } from "@/components/sketchPad";
 import "@/styles/style.css";
-import { IMAGE_LABELS, IPreProcessedData } from "shared";
+import { IMAGE_LABELS, IRawData } from "shared";
 
 const sketchPadContainer = document.getElementById("sketchPadContainer") as HTMLDivElement;
 const studentInput = document.getElementById("studentInput") as HTMLInputElement | null;
@@ -12,7 +12,7 @@ advanceBtn.onclick = start;
 const sketchPad = new SketchPad(sketchPadContainer);
 
 let index = 0;
-const data: IPreProcessedData = {
+const data: IRawData = {
   student: "",
   session: new Date().getTime(),
   drawings: {

@@ -1,6 +1,5 @@
 import { getNearestIndices } from '../maths/basic'
-import { Point } from '../primitives/point'
-import { IPrediction, ISample } from '../types'
+import { IPrediction, ISample, Point } from '../types'
 
 export class KNN {
   constructor(

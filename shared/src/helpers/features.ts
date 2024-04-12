@@ -13,7 +13,7 @@ export const getPointCount = (paths: Path[]): number => {
 export const getWidth = (paths: Path[]): number => {
   const points = paths.flat()
 
-  const xs = points.map(point => point.x)
+  const xs = points.map(point => point[0])
 
   const min = Math.min(...xs)
   const max = Math.max(...xs)
@@ -24,7 +24,7 @@ export const getWidth = (paths: Path[]): number => {
 export const getHeight = (paths: Path[]): number => {
   const points = paths.flat()
 
-  const ys = points.map(point => point.y)
+  const ys = points.map(point => point[1])
 
   const min = Math.min(...ys)
   const max = Math.max(...ys)

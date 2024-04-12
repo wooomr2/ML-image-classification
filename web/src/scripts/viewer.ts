@@ -4,7 +4,7 @@ import { Graphics } from "@/chart/graphics";
 import { IChartOptions } from "@/chart/types";
 import { createRow, toggleFlaggedSample } from "@/components/display";
 import { SketchPad } from "@/components/sketchPad";
-import { PUBLIC_SOURCE } from "@/const";
+import { PUBLIC_SOURCE } from "@/constants";
 import { minMax } from "@/data/minMax";
 import { testing } from "@/data/testing";
 import { training } from "@/data/training";
@@ -17,7 +17,6 @@ import {
   ITestingSample,
   KNN,
   Path,
-  Point,
   Util,
   normalizePoints,
 } from "shared";
@@ -35,10 +34,7 @@ toggleInputButton.addEventListener("click", toggleInput);
 toggleOutputButton.addEventListener("click", toggleOutput);
 
 const featureNames = training.featureNames;
-const trainingSamples: ISample[] = training.samples.map((s) => ({
-  ...s,
-  point: new Point(s.point.x, s.point.y),
-}));
+const trainingSamples: ISample[] = training.samples;
 
 const k = 50;
 const kNN = new KNN(trainingSamples, k);
@@ -46,9 +42,7 @@ let totalCount = 0;
 let correctCount = 0;
 
 const testingSamples: ITestingSample[] = testing.samples.map((s) => {
-  const point = new Point(s.point.x, s.point.y);
-
-  const { label } = kNN.predict(point);
+  const { label } = kNN.predict(s.point);
   const isCorrect = s.label == label;
 
   totalCount++;
@@ -57,7 +51,7 @@ const testingSamples: ITestingSample[] = testing.samples.map((s) => {
   return {
     ...s,
     label: label ?? "?",
-    point: point,
+    point: s.point,
     truth: s.label,
     correct: isCorrect,
   };
@@ -133,8 +127,7 @@ function handleClick(sample: ISample | null, doScroll = true) {
 }
 
 function onDrawingUpdate(paths: Path[]) {
-  const results = Feature.inUse.map((f) => f.function(paths));
-  const point = new Point(results[0], results[1]);
+  const point = Feature.inUse.map((f) => f.function(paths));
 
   normalizePoints([point], minMax);
 

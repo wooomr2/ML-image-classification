@@ -1,8 +1,8 @@
 import express, { NextFunction, Request, Response } from 'express'
 import createError, { HttpError } from 'http-errors'
-import { resCode, resMessage } from './const'
-import testRoute from './routes/test.route'
 import registerBatch from './batch'
+import { resCode, resMessage } from './constants'
+import testRoute from './routes/test.route'
 
 class App {
   app: express.Application

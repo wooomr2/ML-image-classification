@@ -25,7 +25,7 @@ export class Graphics {
       ]);
 
       const hue = colorHueMap.get(style.color);
-      if (typeof hue === 'number') {
+      if (typeof hue === "number") {
         ctx.filter = `
              brightness(2)
              contrast(0.3)
@@ -53,8 +53,8 @@ export class Graphics {
     ctx.beginPath();
     ctx.drawImage(
       image,
-      loc.x - image.width / 2,
-      loc.y - image.height / 2,
+      loc[0] - image.width / 2,
+      loc[1] - image.height / 2,
       image.width,
       image.height
     );
@@ -83,7 +83,7 @@ export class Graphics {
     ctx.textBaseline = vAlign;
     ctx.font = `bold ${size}px Courier`;
     ctx.fillStyle = color;
-    ctx.fillText(text, loc.x, loc.y);
+    ctx.fillText(text, loc[0], loc[1]);
   }
 
   static drawPoint(
@@ -94,7 +94,7 @@ export class Graphics {
   ) {
     ctx.beginPath();
     ctx.fillStyle = color;
-    ctx.arc(loc.x, loc.y, size / 2, 0, Math.PI * 2);
+    ctx.arc(loc[0], loc[1], size / 2, 0, Math.PI * 2);
     ctx.fill();
   }
 }
