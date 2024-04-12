@@ -1,5 +1,18 @@
 import { IMAGE_LABELS } from './const'
 
+export interface ICoincidentBox {
+  width: number
+  height: number
+  vertices: Point[]
+}
+
+export interface IBoundingBox {
+  width: number
+  height: number
+  vertices: Point[]
+  hull: Point[]
+}
+
 export interface IBoundary {
   left: number
   right: number
@@ -26,7 +39,6 @@ export interface ISample {
 
 export interface ITestingSample extends ISample {
   truth: string
-  //nearestSamples: ISample[]
   correct: boolean
 }
 

@@ -13,6 +13,7 @@ import {
   Util,
   flaggedSampleIds,
   flaggedUserIds,
+  minBoundingBox,
   normalizePoints,
 } from 'shared'
 import { ML_CONSTANTS } from '../../constants'
@@ -39,7 +40,7 @@ export default class MLCron {
       }
 
       fs.mkdirSync(FILE_PATH.DATASET_DIR)
-      fs.mkdirSync(FILE_PATH.IMG_DIR)
+      // fs.mkdirSync(FILE_PATH.IMG_DIR)
       fs.mkdirSync(FILE_PATH.JSON_DIR)
       fs.mkdirSync(FILE_PATH.MODEL_DIR)
     }
@@ -76,7 +77,7 @@ export default class MLCron {
 
           fs.writeFileSync(`${FILE_PATH.JSON_DIR}/${id}.json`, JSON.stringify(paths))
 
-          MLCron.#generateImageFile(`${FILE_PATH.IMG_DIR}/${id}.png`, paths)
+          // MLCron.#generateImageFile(`${FILE_PATH.IMG_DIR}/${id}.png`, paths)
           MLCron.#generateImageFile(`${FILE_PATH.WEB_IMG_DIR}/${id}.png`, paths)
 
           printProgress(id, fileNames.length * IMAGE_LABELS.length)
@@ -94,6 +95,11 @@ export default class MLCron {
     ctx.clearRect(0, 0, canvas.width, canvas.height)
 
     Draw.paths(ctx, paths)
+
+    const { vertices, hull } = minBoundingBox(paths.flat())
+
+    Draw.path(ctx, [...vertices, vertices[0]], 'red')
+    Draw.path(ctx, [...hull, hull[0]], 'blue')
 
     const buffer = canvas.toBuffer('image/png')
     fs.writeFileSync(outFilePath, buffer)
@@ -205,6 +211,9 @@ export default class MLCron {
     for (let x = 0; x < canvas.width; x++) {
       for (let y = 0; y < canvas.height; y++) {
         const point = [x / canvas.width, 1 - y / canvas.height]
+
+        // n-dimensional point의 추가 차원축을 [0,1] 사이의 특정값으로 slice 한 뒤, 2D-decision-boundary-image 생성
+        point.push(0.2)
         const { label } = classifier.predict(point)
 
         ctx.fillStyle = IMAGE_STYLES[label].color
@@ -215,7 +224,7 @@ export default class MLCron {
     }
 
     const buffer = canvas.toBuffer('image/png')
-    fs.writeFileSync(FILE_PATH.DECISION_BOUNDARY_IMG, buffer)
+    // fs.writeFileSync(FILE_PATH.DECISION_BOUNDARY_IMG, buffer)
     fs.writeFileSync(FILE_PATH.WEB_DECISION_BOUNDARY_IMG, buffer)
   }
 }

@@ -1,3 +1,4 @@
+import { minBoundingBox } from '../maths/geometry'
 import { Path } from '../types'
 
 export const getPathCount = (paths: Path[]): number => {
@@ -32,9 +33,17 @@ export const getHeight = (paths: Path[]): number => {
   return max - min
 }
 
+export const getElongation = (paths: Path[]): number => {
+  const points = paths.flat()
+  const { width, height } = minBoundingBox(points)
+
+  return (Math.max(width, height) + 1) / (Math.min(width, height) + 1)
+}
+
 export const inUse = [
   // { name: 'Path Count', function: getPathCount },
   //{ name: 'Point Count', function: getPointCount },
   { name: 'Width', function: getWidth },
   { name: 'Height', function: getHeight },
+  { name: 'Elongation', function: getElongation },
 ]

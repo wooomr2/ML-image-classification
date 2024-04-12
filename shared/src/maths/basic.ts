@@ -41,6 +41,28 @@ export const scale = (p: Point, scaler: number): Point => {
   return point
 }
 
+export const magnitude = (p: Point): number => {
+  let num = 0
+  for (let i = 0; i < p.length; i++) {
+    num += p[i] ** 2
+  }
+
+  return Math.sqrt(num)
+}
+
+export const unit = (p: Point): Point => {
+  return scale(p, 1 / magnitude(p))
+}
+
+export const dot = (p1: Point, p2: Point): number => {
+  let dot = 0
+  for (let i = 0; i < p1.length; i++) {
+    dot += p1[i] * p2[i]
+  }
+
+  return dot
+}
+
 // v = a + (b - a) * t
 export const lerp = (a: number, b: number, t: number): number => {
   return a + (b - a) * t
@@ -63,13 +85,17 @@ export const remapPoint = (oldBounds: IBoundary, newBounds: IBoundary, point: Po
   ]
 }
 
-export const distance = (p1: Point, p2: Point): number => {
+export const sqDist = (p1: Point, p2: Point): number => {
   let sqDist = 0
   for (let i = 0; i < p1.length; i++) {
     sqDist += (p1[i] - p2[i]) ** 2
   }
 
-  return Math.sqrt(sqDist)
+  return sqDist
+}
+
+export const distance = (p1: Point, p2: Point): number => {
+  return Math.sqrt(sqDist(p1, p2))
 }
 
 export const getNearestIndex = (loc: Point, points: Point[]): number => {
@@ -99,7 +125,8 @@ export const getNearestIndices = (loc: Point, points: Point[], k = 1): number[] 
 }
 
 export const normalizePoints = (points: Point[], minMax?: { min: number[]; max: number[] }) => {
-  let min: number[], max: number[]
+  let min: number[]
+  let max: number[]
   const dimension = points[0].length
 
   if (minMax) {
@@ -118,7 +145,7 @@ export const normalizePoints = (points: Point[], minMax?: { min: number[]; max: 
 
   for (let i = 0; i < points.length; i++) {
     for (let j = 0; j < dimension; j++) {
-      points[i][j] = invLerp(min[0], max[0], points[i][j])
+      points[i][j] = invLerp(min[j], max[j], points[i][j])
     }
   }
 
