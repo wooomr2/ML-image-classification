@@ -1,6 +1,6 @@
 import { IBoundary, Point } from '../types'
 
-export const equals = (p1: Point, p2: Point): boolean => {
+const equals = (p1: Point, p2: Point): boolean => {
   if (p1.length !== p2.length) {
     return false
   }
@@ -14,7 +14,7 @@ export const equals = (p1: Point, p2: Point): boolean => {
   return true
 }
 
-export const add = (p1: Point, p2: Point): Point => {
+const add = (p1: Point, p2: Point): Point => {
   const point: Point = []
   for (let i = 0; i < p1.length; i++) {
     point[i] = p1[i] + p2[i]
@@ -23,7 +23,7 @@ export const add = (p1: Point, p2: Point): Point => {
   return point
 }
 
-export const subtract = (p1: Point, p2: Point): Point => {
+const subtract = (p1: Point, p2: Point): Point => {
   const point: Point = []
   for (let i = 0; i < p1.length; i++) {
     point[i] = p1[i] - p2[i]
@@ -32,7 +32,7 @@ export const subtract = (p1: Point, p2: Point): Point => {
   return point
 }
 
-export const scale = (p: Point, scaler: number): Point => {
+const scale = (p: Point, scaler: number): Point => {
   const point: Point = []
   for (let i = 0; i < p.length; i++) {
     point[i] = p[i] * scaler
@@ -41,7 +41,7 @@ export const scale = (p: Point, scaler: number): Point => {
   return point
 }
 
-export const magnitude = (p: Point): number => {
+const magnitude = (p: Point): number => {
   let num = 0
   for (let i = 0; i < p.length; i++) {
     num += p[i] ** 2
@@ -50,11 +50,11 @@ export const magnitude = (p: Point): number => {
   return Math.sqrt(num)
 }
 
-export const unit = (p: Point): Point => {
+const unit = (p: Point): Point => {
   return scale(p, 1 / magnitude(p))
 }
 
-export const dot = (p1: Point, p2: Point): number => {
+const dot = (p1: Point, p2: Point): number => {
   let dot = 0
   for (let i = 0; i < p1.length; i++) {
     dot += p1[i] * p2[i]
@@ -64,28 +64,28 @@ export const dot = (p1: Point, p2: Point): number => {
 }
 
 // v = a + (b - a) * t
-export const lerp = (a: number, b: number, t: number): number => {
+const lerp = (a: number, b: number, t: number): number => {
   return a + (b - a) * t
 }
 
 //  t = (v - a) / (b - a)
-export const invLerp = (a: number, b: number, v: number): number => {
+const invLerp = (a: number, b: number, v: number): number => {
   return (v - a) / (b - a)
 }
 
 /** 0: old, 1: new */
-export const remap = (a0: number, b0: number, a1: number, b1: number, v: number): number => {
+const remap = (a0: number, b0: number, a1: number, b1: number, v: number): number => {
   return lerp(a1, b1, invLerp(a0, b0, v))
 }
 
-export const remapPoint = (oldBounds: IBoundary, newBounds: IBoundary, point: Point): Point => {
+const remapPoint = (oldBounds: IBoundary, newBounds: IBoundary, point: Point): Point => {
   return [
     remap(oldBounds.left, oldBounds.right, newBounds.left, newBounds.right, point[0]),
     remap(oldBounds.top, oldBounds.bottom, newBounds.top, newBounds.bottom, point[1]),
   ]
 }
 
-export const sqDist = (p1: Point, p2: Point): number => {
+const sqDist = (p1: Point, p2: Point): number => {
   let sqDist = 0
   for (let i = 0; i < p1.length; i++) {
     sqDist += (p1[i] - p2[i]) ** 2
@@ -94,11 +94,24 @@ export const sqDist = (p1: Point, p2: Point): number => {
   return sqDist
 }
 
-export const distance = (p1: Point, p2: Point): number => {
+const distance = (p1: Point, p2: Point): number => {
   return Math.sqrt(sqDist(p1, p2))
 }
 
-export const getNearestIndex = (loc: Point, points: Point[]): number => {
+/**
+ * Heron's Formula
+ * Area = Math.sqrt(p(p-a)(p-b)(p-c)) where p = (a+b+c)/2
+ *  */
+const triangleArea = (A: Point, B: Point, C: Point) => {
+  const a = distance(B, C)
+  const b = distance(A, C)
+  const c = distance(A, B)
+  const p = (a + b + c) / 2
+
+  return Math.sqrt(p * (p - a) * (p - b) * (p - c))
+}
+
+const getNearestIndex = (loc: Point, points: Point[]): number => {
   let minDist = Number.MAX_SAFE_INTEGER
   let nearestIndex = 0
 
@@ -114,7 +127,7 @@ export const getNearestIndex = (loc: Point, points: Point[]): number => {
   return nearestIndex
 }
 
-export const getNearestIndices = (loc: Point, points: Point[], k = 1): number[] => {
+const getNearestIndices = (loc: Point, points: Point[], k = 1): number[] => {
   const indices = points
     .map((point, idx) => ({ idx, dist: distance(loc, point) }))
     .sort((a, b) => a.dist - b.dist)
@@ -124,7 +137,7 @@ export const getNearestIndices = (loc: Point, points: Point[], k = 1): number[] 
   return indices
 }
 
-export const normalizePoints = (points: Point[], minMax?: { min: number[]; max: number[] }) => {
+const normalizePoints = (points: Point[], minMax?: { min: number[]; max: number[] }) => {
   let min: number[]
   let max: number[]
   const dimension = points[0].length
@@ -150,4 +163,24 @@ export const normalizePoints = (points: Point[], minMax?: { min: number[]; max: 
   }
 
   return { min, max }
+}
+
+export {
+  add,
+  distance,
+  dot,
+  equals,
+  getNearestIndex,
+  getNearestIndices,
+  invLerp,
+  lerp,
+  magnitude,
+  normalizePoints,
+  remap,
+  remapPoint,
+  scale,
+  sqDist,
+  subtract,
+  triangleArea,
+  unit,
 }

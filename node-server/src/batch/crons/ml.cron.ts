@@ -10,6 +10,7 @@ import {
   ISample,
   KNN,
   Path,
+  Polygon,
   Util,
   flaggedSampleIds,
   flaggedUserIds,
@@ -97,9 +98,15 @@ export default class MLCron {
     Draw.paths(ctx, paths)
 
     const { vertices, hull } = minBoundingBox(paths.flat())
+    const roundness = Polygon.roundness(hull)
 
-    Draw.path(ctx, [...vertices, vertices[0]], 'red')
-    Draw.path(ctx, [...hull, hull[0]], 'blue')
+    const R = Math.floor(roundness ** 5 * 255)
+    const G = 0
+    const B = Math.floor((1 - roundness ** 5) * 255)
+    const color = `rgb(${R},${G},${B})`
+
+    // Draw.path(ctx, [...vertices, vertices[0]], 'red')
+    Draw.path(ctx, [...hull, hull[0]], color, 10)
 
     const buffer = canvas.toBuffer('image/png')
     fs.writeFileSync(outFilePath, buffer)
@@ -195,14 +202,14 @@ export default class MLCron {
       totalCount++
     }
 
-    MLCron.#generateDecisionBoundary(kNN)
+    MLCron.#generateDecisionBoundary(kNN, trainingSamples[0].point.length)
 
     console.log(
       `STEP3 - Done. ACCURACY: ${correctCount}/${totalCount}(${Util.formatPercent(correctCount / totalCount)})`
     )
   }
 
-  static #generateDecisionBoundary(classifier: KNN) {
+  static #generateDecisionBoundary(classifier: KNN, dimension = 2) {
     console.log('Generating Decision Boundary ...')
     canvas.width = ML_CONSTANTS.DECISION_BOUNDARY_SIZE
     canvas.height = ML_CONSTANTS.DECISION_BOUNDARY_SIZE
@@ -213,7 +220,9 @@ export default class MLCron {
         const point = [x / canvas.width, 1 - y / canvas.height]
 
         // n-dimensional point의 추가 차원축을 [0,1] 사이의 특정값으로 slice 한 뒤, 2D-decision-boundary-image 생성
-        point.push(0.2)
+        while (point.length < dimension) {
+          point.push(0)
+        }
         const { label } = classifier.predict(point)
 
         ctx.fillStyle = IMAGE_STYLES[label].color

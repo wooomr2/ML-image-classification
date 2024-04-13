@@ -1,4 +1,5 @@
-import { minBoundingBox } from '../maths/geometry'
+import { minBoundingBox } from '../maths/graham-scan'
+import { Polygon } from '../maths/polygon'
 import { Path } from '../types'
 
 export const getPathCount = (paths: Path[]): number => {
@@ -40,10 +41,18 @@ export const getElongation = (paths: Path[]): number => {
   return (Math.max(width, height) + 1) / (Math.min(width, height) + 1)
 }
 
+export const getRoundness = (paths: Path[]): number => {
+  const points = paths.flat()
+  const { hull } = minBoundingBox(points)
+
+  return Polygon.roundness(hull)
+}
+
 export const inUse = [
   // { name: 'Path Count', function: getPathCount },
   //{ name: 'Point Count', function: getPointCount },
   { name: 'Width', function: getWidth },
   { name: 'Height', function: getHeight },
   { name: 'Elongation', function: getElongation },
+  { name: 'Roundness', function: getRoundness },
 ]

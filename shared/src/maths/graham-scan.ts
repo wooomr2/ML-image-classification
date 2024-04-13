@@ -3,7 +3,7 @@ import { IBoundingBox, ICoincidentBox, Point } from '../types'
 import { add, dot, scale, sqDist, subtract, unit } from './basic'
 
 /** minimum (area) bounding box for a given hull (or set of points) */
-export const minBoundingBox = (points: Point[], hull?: Point[]): IBoundingBox => {
+const minBoundingBox = (points: Point[], hull?: Point[]): IBoundingBox => {
   let result = { width: 0, height: 0, vertices: points, hull: points }
 
   if (points.length < 3) {
@@ -29,7 +29,7 @@ export const minBoundingBox = (points: Point[], hull?: Point[]): IBoundingBox =>
  * builds a box with one of the edges being coincident with the edge
  * between hull's points i and j (expected to be neighbors)
  *  */
-export const coincidentBox = (hull: Point[], i: number, j: number): ICoincidentBox => {
+const coincidentBox = (hull: Point[], i: number, j: number): ICoincidentBox => {
   const origin = hull[i]
   // build base vectors for a new system of coordinates
   // where the x-axis is coincident with the i-j edge
@@ -73,7 +73,7 @@ export const coincidentBox = (hull: Point[], i: number, j: number): ICoincidentB
 /** builds a convex hull (a polygon) using the Graham scan algorithm
  * - https://en.wikipedia.org/wiki/Graham_scan
  *  */
-export const grahamScan = (points: Point[]): Point[] => {
+const grahamScan = (points: Point[]): Point[] => {
   const lowestPoint = lowestVerticalPoint(points)
   const sortedPoints = sortPoints(lowestPoint, points)
 
@@ -98,7 +98,7 @@ export const grahamScan = (points: Point[]): Point[] => {
 }
 
 /** y가 가장 큰 point(같은 경우 x가 작은 값) */
-export const lowestVerticalPoint = (points: Point[]): Point =>
+const lowestVerticalPoint = (points: Point[]): Point =>
   points.reduce((lowest, point) => {
     if (point[1] > lowest[1]) {
       return point
@@ -110,7 +110,7 @@ export const lowestVerticalPoint = (points: Point[]): Point =>
   })
 
 /** orders points in a counter-clockwise relative to the given origin */
-export const sortPoints = (origin: Point, points: Point[]): Point[] =>
+const sortPoints = (origin: Point, points: Point[]): Point[] =>
   points.slice().sort((a, b) => {
     const orientation = getOrientation(origin, a, b)
     if (orientation === 0) {
@@ -124,10 +124,12 @@ export const sortPoints = (origin: Point, points: Point[]): Point[] =>
  * p2's relative position to vector(p1->p3)
  * @returns 0(on the line) | 1(right) | -1(left)
  *  */
-export const getOrientation = (p1: Point, p2: Point, p3: Point) => {
+const getOrientation = (p1: Point, p2: Point, p3: Point) => {
   const val = (p2[1] - p1[1]) * (p3[0] - p2[0]) - (p2[0] - p1[0]) * (p3[1] - p2[1])
   if (val === 0) {
     return 0
   }
   return val > 0 ? 1 : -1
 }
+
+export { coincidentBox, getOrientation, grahamScan, lowestVerticalPoint, minBoundingBox, sortPoints }

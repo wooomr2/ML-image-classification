@@ -1,11 +1,11 @@
 import { Path } from '../types'
 
 export class Draw {
-  static path(ctx: CanvasRenderingContext2D, path: Path, color = 'black') {
+  static path(ctx: CanvasRenderingContext2D, path: Path, color = 'black', width = 3) {
     if (path.length === 0) return
 
     ctx.strokeStyle = color
-    ctx.lineWidth = 3
+    ctx.lineWidth = width
 
     ctx.beginPath()
 
