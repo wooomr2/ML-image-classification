@@ -15,6 +15,7 @@ export const getPointCount = (paths: Path[]): number => {
 
 export const getWidth = (paths: Path[]): number => {
   const points = paths.flat()
+  if (points.length === 0) return 0
 
   const xs = points.map(point => point[0])
 
@@ -26,6 +27,7 @@ export const getWidth = (paths: Path[]): number => {
 
 export const getHeight = (paths: Path[]): number => {
   const points = paths.flat()
+  if (points.length === 0) return 0
 
   const ys = points.map(point => point[1])
 
@@ -57,7 +59,7 @@ export const getComplexity = (paths: Path[], ctx: CanvasRenderingContext2D): num
 
 export const inUse = [
   // { name: 'Path Count', function: getPathCount },
-  //{ name: 'Point Count', function: getPointCount },
+  // { name: 'Point Count', function: getPointCount },
   { name: 'Width', function: getWidth },
   { name: 'Height', function: getHeight },
   { name: 'Elongation', function: getElongation },

@@ -39,3 +39,18 @@ export const toCSV = (headers: string[], rows: any[][]) => {
 
   return str
 }
+
+export const getRGBA = (value: number) => {
+  const R = value < 0 ? 0 : 255
+  const G = R
+  const B = value > 0 ? 0 : 255
+  const A = Math.abs(value)
+
+  return `rgba(${R},${G},${B},${A})`
+}
+
+export const getRandomColor = () => {
+  const hue = 290 + Math.random() * 260
+
+  return `hsl(${hue},100%, 60%)`
+}

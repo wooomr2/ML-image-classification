@@ -28,4 +28,11 @@ router.get('/evaluate/knn', async (req: Request, res: Response, next: NextFuncti
   return res.json({ message: 'knn evaluation DONE' })
 })
 
+router.get('/evaluate/mlp', async (req: Request, res: Response, next: NextFunction) => {
+  await MLCron.evaluate_mlp()
+
+  return res.json({ message: 'knn evaluation DONE' })
+})
+
+
 export default router

@@ -15,6 +15,7 @@ export const FILE_PATH = {
   FEATURES_JSON: dataDir + '/dataset/features.json',
   TRAINING_JSON: dataDir + '/dataset/training.json',
   TESTING_JSON: dataDir + '/dataset/testing.json',
+  MODEL_JSON: dataDir + '/dataset/model/model.json',
 
   TRAINING_CSV: dataDir + '/dataset/training.csv',
   TESTING_CSV: dataDir + '/dataset/testing.csv',
@@ -27,6 +28,7 @@ export const FILE_PATH = {
   TRAINING_TS: webDir + '/src/data/training.ts',
   TESTING_TS: webDir + '/src/data/testing.ts',
   MIN_MAX_TS: webDir + '/src/data/minMax.ts',
+  MODEL_TS: webDir + '/src/data/model.ts',
 
   // web-public
   WEB_IMG_DIR: webDir + '/public/img',

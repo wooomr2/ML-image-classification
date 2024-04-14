@@ -4,8 +4,10 @@ import { Graphics } from "@/chart/graphics";
 import { IChartOptions } from "@/chart/types";
 import { createRow, toggleFlaggedSample } from "@/components/display";
 import { SketchPad } from "@/components/sketchPad";
+import { Visualizer } from "@/chart/visualizer";
 import { PUBLIC_SOURCE } from "@/constants";
 import { minMax } from "@/data/minMax";
+import { model } from "@/data/model";
 import { testing } from "@/data/testing";
 import { training } from "@/data/training";
 import "@/styles/style.css";
@@ -15,7 +17,7 @@ import {
   IMAGE_STYLES,
   ISample,
   ITestingSample,
-  KNN,
+  MLP,
   Path,
   Util,
   normalizePoints,
@@ -29,6 +31,7 @@ const predictedContainer = document.getElementById("predictedContainer") as HTML
 const toggleInputButton = document.getElementById("toggleInputButton") as HTMLButtonElement;
 const toggleOutputButton = document.getElementById("toggleOutputButton") as HTMLButtonElement;
 const statistics = document.getElementById("statistics") as HTMLDivElement;
+const networkCanvas = document.getElementById("networkCanvas") as HTMLCanvasElement;
 
 toggleInputButton.addEventListener("click", toggleInput);
 toggleOutputButton.addEventListener("click", toggleOutput);
@@ -36,13 +39,18 @@ toggleOutputButton.addEventListener("click", toggleOutput);
 const featureNames = training.featureNames;
 const trainingSamples: ISample[] = training.samples;
 
-const k = 50;
-const kNN = new KNN(trainingSamples, k);
+// const k = 50;
+// const knn = new KNN(trainingSamples, k);
+
+const mlp = new MLP([], []);
+mlp.load(model as MLP);
+
 let totalCount = 0;
 let correctCount = 0;
 
 const testingSamples: ITestingSample[] = testing.samples.map((s) => {
-  const { label } = kNN.predict(s.point);
+  // const { label } = knn.predict(s.point);
+  const { label } = mlp.predict(s.point);
   const isCorrect = s.label == label;
 
   totalCount++;
@@ -96,6 +104,20 @@ const options: IChartOptions = {
 
 Graphics.generateImages(options.styles);
 
+const outputLabels = Object.values(options.styles).map((style) => style.image!);
+
+networkCanvas.width = options.size;
+networkCanvas.height = options.size;
+const networkCtx = networkCanvas.getContext("2d")!;
+
+Visualizer.drawNetwork(networkCtx, mlp.network, outputLabels);
+
+const tmpCanvas = document.createElement("canvas");
+const tmpCtx = tmpCanvas.getContext("2d")!;
+tmpCanvas.style.display = "none";
+tmpCanvas.width = options.size;
+tmpCanvas.height = options.size;
+
 const chart = new Chart(chartContainer, trainingSamples, options, handleClick);
 const confusion = new Confusion(confusionContainer, testingSamples, [...IMAGE_LABELS], options);
 const sketchPad = new SketchPad(inputContainer, onDrawingUpdate, options.size - 50);
@@ -126,12 +148,15 @@ function handleClick(sample: ISample | null, doScroll = true) {
   }
 }
 
-function onDrawingUpdate(paths: Path[], ctx: CanvasRenderingContext2D) {
-  const point = Feature.inUse.map((f) => f.function(paths, ctx));
+function onDrawingUpdate(paths: Path[]) {
+  tmpCtx.clearRect(0, 0, tmpCanvas.width, tmpCanvas.height);
+  const point = Feature.inUse.map((f) => f.function(paths, tmpCtx));
 
   normalizePoints([point], minMax);
 
-  const { label, nearestSamples } = kNN.predict(point);
+  // const { label, nearestSamples } = knn.predict(point);
+  const { label } = mlp.predict(point);
+  Visualizer.drawNetwork(networkCtx, mlp.network, outputLabels);
 
   if (paths.length) {
     predictedContainer.innerHTML = `Is it a ${label}?`;
@@ -139,12 +164,15 @@ function onDrawingUpdate(paths: Path[], ctx: CanvasRenderingContext2D) {
     predictedContainer.innerHTML = "Draw Something!";
   }
 
-  chart.showDynamicPoint(point, label, nearestSamples);
+  // chart.showDynamicPoint(point, label, nearestSamples);
+  if (inputContainer.style.display == "block") {
+    chart.showDynamicPoint(point, label, null);
+  }
 }
 
 function toggleInput() {
   if (inputContainer.style.display == "none") {
-    inputContainer.style.display = "block";
+    inputContainer.style.display = "";
     sketchPad.triggerUpdate();
   } else {
     inputContainer.style.display = "none";
@@ -153,9 +181,13 @@ function toggleInput() {
 }
 
 function toggleOutput() {
-  if (confusionContainer.style.display == "none") {
-    confusionContainer.style.display = "block";
-  } else {
+  if (networkCanvas.style.display == "") {
+    networkCanvas.style.display = "none";
+    confusionContainer.style.display = "";
+  } else if (confusionContainer.style.display == "") {
     confusionContainer.style.display = "none";
+  } else {
+    confusionContainer.style.display = "";
+    networkCanvas.style.display = "";
   }
 }

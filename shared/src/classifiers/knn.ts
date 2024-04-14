@@ -1,7 +1,7 @@
 import { getNearestIndices } from '../maths/basic'
-import { IPrediction, ISample, Point } from '../types'
+import { IClassifier, IKnnPrediction, ISample, Point } from '../types'
 
-export class KNN {
+export class KNN implements IClassifier {
   constructor(
     readonly samples: ISample[],
     readonly k: number
@@ -10,7 +10,7 @@ export class KNN {
     this.k = k
   }
 
-  predict(point: Point): IPrediction {
+  predict(point: Point): IKnnPrediction {
     const { samples, k } = this
 
     const samplePoints = samples.map(s => s.point)

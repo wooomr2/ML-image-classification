@@ -6,6 +6,7 @@ import {
   IRawData,
   ISample,
   KNN,
+  MLP,
   Path,
   Util,
   flaggedSampleIds,
@@ -23,7 +24,8 @@ export default class MLCron {
   static async run() {
     await MLCron.generate_dataset()
     await MLCron.feature_extractor()
-    await MLCron.evaluate_knn()
+    // await MLCron.evaluate_knn()
+    await MLCron.evaluate_mlp()
   }
 
   static async generate_dataset() {
@@ -163,7 +165,7 @@ export default class MLCron {
       fs.readFileSync(FILE_PATH.TRAINING_JSON, { encoding: 'utf-8' })
     ) as IFeatures
 
-    const kNN = new KNN(trainingSamples, ML_CONSTANTS.K)
+    const knn = new KNN(trainingSamples, ML_CONSTANTS.K)
 
     const { samples: testingSamples } = JSON.parse(
       fs.readFileSync(FILE_PATH.TESTING_JSON, { encoding: 'utf-8' })
@@ -172,19 +174,61 @@ export default class MLCron {
     let totalCount = 0
     let correctCount = 0
     for (const sample of testingSamples) {
-      const { label } = kNN.predict(sample.point)
+      const { label } = knn.predict(sample.point)
       const isCorrect = sample.label == label
 
       correctCount += isCorrect ? 1 : 0
       totalCount++
     }
 
-    const buffer = imgGenerator.generateDecisionBoundary(kNN, trainingSamples[0].point.length)
+    const buffer = imgGenerator.generateDecisionBoundary(knn, trainingSamples[0].point.length)
 
     fs.writeFileSync(FILE_PATH.WEB_DECISION_BOUNDARY_IMG, buffer)
 
     console.log(
-      `STEP3 - Done. ACCURACY: ${correctCount}/${totalCount}(${Util.formatPercent(correctCount / totalCount)})`
+      `STEP3 - Done. KNN ACCURACY: ${correctCount}/${totalCount}(${Util.formatPercent(correctCount / totalCount)})`
+    )
+  }
+
+  static async evaluate_mlp() {
+    console.log('STEP3 - MLP Evaluation ...')
+
+    const { samples: trainingSamples } = JSON.parse(
+      fs.readFileSync(FILE_PATH.TRAINING_JSON, { encoding: 'utf-8' })
+    ) as IFeatures
+
+    const mlp = new MLP([trainingSamples[0].point.length, 10, IMAGE_LABELS.length], [...IMAGE_LABELS])
+
+    if (fs.existsSync(FILE_PATH.MODEL_JSON)) {
+      const loaded = JSON.parse(fs.readFileSync(FILE_PATH.MODEL_JSON, { encoding: 'utf-8' }))
+      mlp.load(loaded as MLP)
+    }
+
+    mlp.fit(trainingSamples, ML_CONSTANTS.MLP_TRY_CNT)
+
+    fs.writeFileSync(FILE_PATH.MODEL_JSON, JSON.stringify(mlp))
+
+    const { samples: testingSamples } = JSON.parse(
+      fs.readFileSync(FILE_PATH.TESTING_JSON, { encoding: 'utf-8' })
+    ) as IFeatures
+
+    let totalCount = 0
+    let correctCount = 0
+    for (const sample of testingSamples) {
+      const { label } = mlp.predict(sample.point)
+      const isCorrect = sample.label == label
+
+      correctCount += isCorrect ? 1 : 0
+      totalCount++
+    }
+
+    const buffer = imgGenerator.generateDecisionBoundary(mlp, trainingSamples[0].point.length)
+
+    fs.writeFileSync(FILE_PATH.WEB_DECISION_BOUNDARY_IMG, buffer)
+    fs.writeFileSync(FILE_PATH.MODEL_TS, `export const model=${JSON.stringify(mlp)}`)
+
+    console.log(
+      `STEP3 - Done. MLP ACCURACY: ${correctCount}/${totalCount}(${Util.formatPercent(correctCount / totalCount)})`
     )
   }
 }

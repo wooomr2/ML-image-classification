@@ -49,5 +49,16 @@ export interface IFeatures {
 
 export interface IPrediction {
   label: string
+}
+export interface IKnnPrediction extends IPrediction {
+  label: string
   nearestSamples: ISample[]
+}
+
+export interface IMlpPrediction extends IPrediction {
+  label: string
+}
+
+export abstract class IClassifier {
+  abstract predict(point: Point): IPrediction
 }

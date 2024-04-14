@@ -255,14 +255,10 @@ export class Chart {
     const minY = Math.min(...ys);
     const maxY = Math.max(...ys);
 
-    // const deltaX = maxX - minX;
-    // const deltaY = maxY - minY;
-    // const deltaMax = Math.max(deltaX, deltaY);
-
     const bounds: IBoundary = {
       left: minX,
-      right: maxX, // minX + deltaMax
-      top: maxY, // maxY + deltaMax,
+      right: maxX,
+      top: maxY,
       bottom: minY,
     };
 

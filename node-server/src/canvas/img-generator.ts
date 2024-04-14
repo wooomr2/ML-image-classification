@@ -1,5 +1,5 @@
 import { Canvas, createCanvas } from 'canvas'
-import { Draw, IMAGE_STYLES, KNN, Path, Polygon, TLabel, minBoundingBox } from 'shared'
+import { Draw, IClassifier, IMAGE_STYLES, KNN, MLP, Path, Polygon, TLabel, minBoundingBox } from 'shared'
 import { ML_CONSTANTS } from '../constants'
 import { printProgress } from '../utils/process.util'
 
@@ -60,7 +60,7 @@ export default class ImgGenerator {
     return buffer
   }
 
-  generateDecisionBoundary(classifier: KNN, dimension = 2): Buffer {
+  generateDecisionBoundary(classifier: IClassifier, dimension = 2): Buffer {
     console.log('Generating Decision Boundary ...')
     const { canvas, ctx } = this
 
