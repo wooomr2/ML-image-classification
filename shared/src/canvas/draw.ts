@@ -27,4 +27,22 @@ export class Draw {
       Draw.path(ctx, path, color)
     }
   }
+
+  /** Draw paths and return pixel's alpha
+   *  @returns pixel's alpha */
+  static getPixels = (ctx: CanvasRenderingContext2D, paths: Path[], size = 400) => {
+    Draw.paths(ctx, paths)
+
+    const imgData = ctx.getImageData(0, 0, size, size)
+
+    // [R,G,B,A, R,G,B,A ...] => [A,A, ...]
+    return imgData.data.filter((_, idx) => idx % 4 == 3)
+  }
+
+  static text(ctx: CanvasRenderingContext2D, text: string, color = 'black', loc = [0, 0], size = 100) {
+    ctx.font = `bold ${size}px`
+    ctx.textBaseline = 'top'
+    ctx.fillStyle = color
+    ctx.fillText(text, loc[0], loc[1])
+  }
 }

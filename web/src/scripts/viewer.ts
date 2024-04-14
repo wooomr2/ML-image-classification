@@ -126,8 +126,8 @@ function handleClick(sample: ISample | null, doScroll = true) {
   }
 }
 
-function onDrawingUpdate(paths: Path[]) {
-  const point = Feature.inUse.map((f) => f.function(paths));
+function onDrawingUpdate(paths: Path[], ctx: CanvasRenderingContext2D) {
+  const point = Feature.inUse.map((f) => f.function(paths, ctx));
 
   normalizePoints([point], minMax);
 

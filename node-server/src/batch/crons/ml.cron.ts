@@ -1,29 +1,23 @@
-import { createCanvas } from 'canvas'
 import * as fs from 'fs'
 import {
-  Draw,
   Feature,
   IFeatures,
   IMAGE_LABELS,
-  IMAGE_STYLES,
   IRawData,
   ISample,
   KNN,
   Path,
-  Polygon,
   Util,
   flaggedSampleIds,
   flaggedUserIds,
-  minBoundingBox,
   normalizePoints,
 } from 'shared'
+import ImgGenerator from '../../canvas/img-generator'
 import { ML_CONSTANTS } from '../../constants'
 import { FILE_PATH } from '../../constants/file-path'
 import { printProgress } from '../../utils/process.util'
 
-// 주의:: node-canvas의 CanvasRenderingContext2D를 DOM의 CanvasRenderingContext2D로 type-casting해서 사용중
-const canvas = createCanvas(ML_CONSTANTS.DEFAULT_CANVAS_SIZE, ML_CONSTANTS.DEFAULT_CANVAS_SIZE)
-const ctx = canvas.getContext('2d') as unknown as CanvasRenderingContext2D
+const imgGenerator = new ImgGenerator()
 
 export default class MLCron {
   static async run() {
@@ -78,8 +72,9 @@ export default class MLCron {
 
           fs.writeFileSync(`${FILE_PATH.JSON_DIR}/${id}.json`, JSON.stringify(paths))
 
-          // MLCron.#generateImageFile(`${FILE_PATH.IMG_DIR}/${id}.png`, paths)
-          MLCron.#generateImageFile(`${FILE_PATH.WEB_IMG_DIR}/${id}.png`, paths)
+          const buffer = imgGenerator.generateImageBufferUsingPixels(paths)
+
+          fs.writeFileSync(`${FILE_PATH.WEB_IMG_DIR}/${id}.png`, buffer)
 
           printProgress(id, fileNames.length * IMAGE_LABELS.length)
         }
@@ -92,36 +87,18 @@ export default class MLCron {
     console.log('STEP1 - DATASET IS GENERATED.')
   }
 
-  static #generateImageFile(outFilePath: string, paths: Path[]) {
-    ctx.clearRect(0, 0, canvas.width, canvas.height)
-
-    Draw.paths(ctx, paths)
-
-    const { vertices, hull } = minBoundingBox(paths.flat())
-    const roundness = Polygon.roundness(hull)
-
-    const R = Math.floor(roundness ** 5 * 255)
-    const G = 0
-    const B = Math.floor((1 - roundness ** 5) * 255)
-    const color = `rgb(${R},${G},${B})`
-
-    // Draw.path(ctx, [...vertices, vertices[0]], 'red')
-    Draw.path(ctx, [...hull, hull[0]], color, 10)
-
-    const buffer = canvas.toBuffer('image/png')
-    fs.writeFileSync(outFilePath, buffer)
-  }
-
   static async feature_extractor() {
     console.log('STEP2 - Feature Extracting ...')
 
     const samples = JSON.parse(fs.readFileSync(FILE_PATH.SAMPLES_JSON, { encoding: 'utf-8' })) as ISample[]
-    for (const sample of samples) {
+    for (let i = 0; i < samples.length; i++) {
+      const sample = samples[i]
       const data = fs.readFileSync(`${FILE_PATH.JSON_DIR}/${sample.id}.json`, { encoding: 'utf-8' })
 
       const paths = JSON.parse(data) as Path[]
 
-      sample.point = Feature.inUse.map(f => f.function(paths))
+      sample.point = Feature.inUse.map(f => f.function(paths, imgGenerator.ctx))
+      printProgress(i, samples.length - 1)
     }
 
     const trainingSamples: ISample[] = []
@@ -202,38 +179,12 @@ export default class MLCron {
       totalCount++
     }
 
-    MLCron.#generateDecisionBoundary(kNN, trainingSamples[0].point.length)
+    const buffer = imgGenerator.generateDecisionBoundary(kNN, trainingSamples[0].point.length)
+
+    fs.writeFileSync(FILE_PATH.WEB_DECISION_BOUNDARY_IMG, buffer)
 
     console.log(
       `STEP3 - Done. ACCURACY: ${correctCount}/${totalCount}(${Util.formatPercent(correctCount / totalCount)})`
     )
-  }
-
-  static #generateDecisionBoundary(classifier: KNN, dimension = 2) {
-    console.log('Generating Decision Boundary ...')
-    canvas.width = ML_CONSTANTS.DECISION_BOUNDARY_SIZE
-    canvas.height = ML_CONSTANTS.DECISION_BOUNDARY_SIZE
-    ctx.clearRect(0, 0, canvas.width, canvas.height)
-
-    for (let x = 0; x < canvas.width; x++) {
-      for (let y = 0; y < canvas.height; y++) {
-        const point = [x / canvas.width, 1 - y / canvas.height]
-
-        // n-dimensional point의 추가 차원축을 [0,1] 사이의 특정값으로 slice 한 뒤, 2D-decision-boundary-image 생성
-        while (point.length < dimension) {
-          point.push(0)
-        }
-        const { label } = classifier.predict(point)
-
-        ctx.fillStyle = IMAGE_STYLES[label].color
-        ctx.fillRect(x, y, 1, 1)
-      }
-
-      printProgress(x + 1, canvas.width)
-    }
-
-    const buffer = canvas.toBuffer('image/png')
-    // fs.writeFileSync(FILE_PATH.DECISION_BOUNDARY_IMG, buffer)
-    fs.writeFileSync(FILE_PATH.WEB_DECISION_BOUNDARY_IMG, buffer)
   }
 }

@@ -7,12 +7,16 @@ export class SketchPad {
 
   undoBtn: HTMLButtonElement;
 
-  onUpdate?: (paths: Path[]) => void;
+  onUpdate?: (paths: Path[], ctx: CanvasRenderingContext2D) => void;
 
   paths: Path[] = [];
   isDrawing = false;
 
-  constructor(container: HTMLElement, onUpdate?: (paths: Path[]) => void, size = 400) {
+  constructor(
+    container: HTMLElement,
+    onUpdate?: (paths: Path[], ctx: CanvasRenderingContext2D) => void,
+    size = 400
+  ) {
     this.size = size;
 
     this.canvas = document.createElement("canvas");
@@ -48,7 +52,7 @@ export class SketchPad {
 
   triggerUpdate() {
     if (this.onUpdate) {
-      this.onUpdate(this.paths);
+      this.onUpdate(this.paths, this.ctx);
     }
   }
 

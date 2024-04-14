@@ -1,3 +1,4 @@
+import { Draw } from '../canvas/draw'
 import { minBoundingBox } from '../maths/graham-scan'
 import { Polygon } from '../maths/polygon'
 import { Path } from '../types'
@@ -48,6 +49,12 @@ export const getRoundness = (paths: Path[]): number => {
   return Polygon.roundness(hull)
 }
 
+export const getComplexity = (paths: Path[], ctx: CanvasRenderingContext2D): number => {
+  const pixels = Draw.getPixels(ctx, paths)
+
+  return pixels.filter(a => a != 0).length
+}
+
 export const inUse = [
   // { name: 'Path Count', function: getPathCount },
   //{ name: 'Point Count', function: getPointCount },
@@ -55,4 +62,5 @@ export const inUse = [
   { name: 'Height', function: getHeight },
   { name: 'Elongation', function: getElongation },
   { name: 'Roundness', function: getRoundness },
+  { name: 'Complexity', function: getComplexity },
 ]
