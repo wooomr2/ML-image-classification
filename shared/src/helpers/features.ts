@@ -50,7 +50,7 @@ export const getRoundness = (paths: Path[]): number => {
 }
 
 export const getComplexity = (paths: Path[], ctx: CanvasRenderingContext2D): number => {
-  const pixels = Draw.getPixels(ctx, paths)
+  const pixels = Draw.getPixels(ctx, paths, true)
 
   return pixels.filter(a => a != 0).length
 }

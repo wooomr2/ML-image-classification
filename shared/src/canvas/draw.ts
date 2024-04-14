@@ -1,4 +1,5 @@
-import { Path } from '../types'
+import { invLerp } from '../maths/basic'
+import { IBoundary, Path } from '../types'
 
 export class Draw {
   static path(ctx: CanvasRenderingContext2D, path: Path, color = 'black', width = 3) {
@@ -30,8 +31,33 @@ export class Draw {
 
   /** Draw paths and return pixel's alpha
    *  @returns pixel's alpha */
-  static getPixels = (ctx: CanvasRenderingContext2D, paths: Path[], size = 400) => {
-    Draw.paths(ctx, paths)
+  static getPixels = (ctx: CanvasRenderingContext2D, paths: Path[], rescaling = true, size = 400) => {
+    if (rescaling) {
+      const points = paths.flat()
+
+      const xs = points.map(point => point[0])
+      const ys = points.map(point => point[1])
+
+      const bounds: IBoundary = {
+        left: Math.min(...xs),
+        right: Math.max(...xs),
+        top: Math.min(...ys),
+        bottom: Math.max(...ys),
+      }
+
+      const newPaths = []
+      for (const path of paths) {
+        const newPath = path.map(p => [
+          invLerp(bounds.left, bounds.right, p[0]) * size,
+          invLerp(bounds.top, bounds.bottom, p[1]) * size,
+        ])
+        newPaths.push(newPath)
+      }
+
+      Draw.paths(ctx, newPaths)
+    } else {
+      Draw.paths(ctx, paths)
+    }
 
     const imgData = ctx.getImageData(0, 0, size, size)
 

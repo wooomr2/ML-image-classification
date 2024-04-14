@@ -39,11 +39,21 @@ export default class ImgGenerator {
     const { canvas, ctx } = this
     ctx.clearRect(0, 0, canvas.width, canvas.height)
 
-    Draw.paths(ctx, paths)
-
     const pixels = Draw.getPixels(ctx, paths)
-    const complexity = pixels.filter(a => a != 0).length
-    Draw.text(ctx, `Complexity: ${complexity}`, 'blue')
+    const size = Math.sqrt(pixels.length)
+
+    const imgData = ctx.getImageData(0, 0, size, size)
+
+    for (let i = 0; i < pixels.length; i++) {
+      const alpha = pixels[i]
+      const startIdx = i * 4
+
+      imgData.data[startIdx] = 0
+      imgData.data[startIdx + 1] = 0
+      imgData.data[startIdx + 2] = 0
+      imgData.data[startIdx + 3] = alpha
+    }
+    ctx.putImageData(imgData, 0, 0)
 
     const buffer = canvas.toBuffer('image/png')
 
