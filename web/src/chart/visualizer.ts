@@ -25,7 +25,7 @@ export class Visualizer {
           network.levels.length == 1 ? 0.5 : i / (network.levels.length - 1)
         );
 
-      ctx.setLineDash([7, 3]);
+      ctx.setLineDash([1, 3]);
       Visualizer.drawLevel(
         ctx,
         network.levels[i],

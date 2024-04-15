@@ -18,17 +18,6 @@ export class MLP implements IClassifier {
     this.network = mlp.network
   }
 
-  predict(point: Point): IMlpPrediction {
-    const output = NeuralNetwork.feedForward(point, this.network)
-
-    const max = Math.max(...output)
-    const index = output.indexOf(max)
-
-    const label = this.classes[index]
-
-    return { label: label }
-  }
-
   fit(samples: ISample[], tries = 1000) {
     let bestNetwork = this.network
     let bestAccuracy = this.evaluate(samples)
@@ -41,6 +30,8 @@ export class MLP implements IClassifier {
         bestAccuracy = accuracy
         bestNetwork = this.network
       }
+
+      console.log(bestAccuracy, accuracy)
     }
 
     this.network = bestNetwork
@@ -58,5 +49,16 @@ export class MLP implements IClassifier {
     const accuracy = correctCount / samples.length
 
     return accuracy
+  }
+
+  predict(point: Point): IMlpPrediction {
+    const output = NeuralNetwork.feedForward(point, this.network)
+
+    const max = Math.max(...output)
+    const index = output.indexOf(max)
+
+    const label = this.classes[index]
+
+    return { label: label }
   }
 }

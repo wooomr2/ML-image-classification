@@ -25,13 +25,13 @@ router.get('/feature-extractor', async (req: Request, res: Response, next: NextF
 router.get('/evaluate/knn', async (req: Request, res: Response, next: NextFunction) => {
   await MLCron.evaluate_knn()
 
-  return res.json({ message: 'knn evaluation DONE' })
+  return res.json({ message: 'KNN evaluation DONE' })
 })
 
 router.get('/evaluate/mlp', async (req: Request, res: Response, next: NextFunction) => {
   await MLCron.evaluate_mlp()
 
-  return res.json({ message: 'knn evaluation DONE' })
+  return res.json({ message: 'MLP evaluation DONE' })
 })
 
 

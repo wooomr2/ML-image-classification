@@ -7,6 +7,7 @@ knn = KNeighborsClassifier(n_neighbors=50)
 knn.fit(X, Y)
 
 X, Y = readFeatureFile('../data/dataset/testing.csv')
+
 accuracy = knn.score(X, Y)
 
 print("Accuracy: ", accuracy*100, "%")

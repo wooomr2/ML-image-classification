@@ -120,7 +120,7 @@ tmpCanvas.height = options.size;
 
 const chart = new Chart(chartContainer, trainingSamples, options, handleClick);
 const confusion = new Confusion(confusionContainer, testingSamples, [...IMAGE_LABELS], options);
-const sketchPad = new SketchPad(inputContainer, onDrawingUpdate, options.size - 50);
+const sketchPad = new SketchPad(inputContainer, onDrawingUpdate, options.size);
 sketchPad.canvas.style.cssText += "outline:10000px solid rgba(255,255,255,0.7);";
 
 function handleClick(sample: ISample | null, doScroll = true) {
@@ -151,6 +151,7 @@ function handleClick(sample: ISample | null, doScroll = true) {
 function onDrawingUpdate(paths: Path[]) {
   tmpCtx.clearRect(0, 0, tmpCanvas.width, tmpCanvas.height);
   const point = Feature.inUse.map((f) => f.function(paths, tmpCtx));
+  // const point = Feature.inUse.map((f) => f.function(paths));
 
   normalizePoints([point], minMax);
 
@@ -172,7 +173,7 @@ function onDrawingUpdate(paths: Path[]) {
 
 function toggleInput() {
   if (inputContainer.style.display == "none") {
-    inputContainer.style.display = "";
+    inputContainer.style.display = "block";
     sketchPad.triggerUpdate();
   } else {
     inputContainer.style.display = "none";
@@ -181,13 +182,13 @@ function toggleInput() {
 }
 
 function toggleOutput() {
-  if (networkCanvas.style.display == "") {
+  if (networkCanvas.style.display == "block") {
     networkCanvas.style.display = "none";
-    confusionContainer.style.display = "";
-  } else if (confusionContainer.style.display == "") {
+    confusionContainer.style.display = "block";
+  } else if (confusionContainer.style.display == "block") {
     confusionContainer.style.display = "none";
   } else {
-    confusionContainer.style.display = "";
-    networkCanvas.style.display = "";
+    confusionContainer.style.display = "block";
+    networkCanvas.style.display = "block";
   }
 }

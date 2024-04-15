@@ -35,6 +35,9 @@ export default class MLCron {
       if (fs.existsSync(FILE_PATH.DATASET_DIR)) {
         fs.rmSync(FILE_PATH.DATASET_DIR, { recursive: true })
       }
+      if (fs.existsSync(FILE_PATH.MODEL_DIR)) {
+        fs.rmSync(FILE_PATH.MODEL_DIR, { recursive: true })
+      }
 
       fs.mkdirSync(FILE_PATH.DATASET_DIR)
       // fs.mkdirSync(FILE_PATH.IMG_DIR)
@@ -99,7 +102,11 @@ export default class MLCron {
 
       const paths = JSON.parse(data) as Path[]
 
+      imgGenerator.ctx.clearRect(0, 0, imgGenerator.size, imgGenerator.size)
+
       sample.point = Feature.inUse.map(f => f.function(paths, imgGenerator.ctx))
+      // sample.point = Feature.inUse.map(f => f.function(paths))
+
       printProgress(i, samples.length - 1)
     }
 
@@ -204,9 +211,9 @@ export default class MLCron {
       mlp.load(loaded as MLP)
     }
 
-    mlp.fit(trainingSamples, ML_CONSTANTS.MLP_TRY_CNT)
+    console.log(JSON.stringify(mlp))
 
-    fs.writeFileSync(FILE_PATH.MODEL_JSON, JSON.stringify(mlp))
+    mlp.fit(trainingSamples, ML_CONSTANTS.MLP_TRY_CNT)
 
     const { samples: testingSamples } = JSON.parse(
       fs.readFileSync(FILE_PATH.TESTING_JSON, { encoding: 'utf-8' })
@@ -222,10 +229,12 @@ export default class MLCron {
       totalCount++
     }
 
+    fs.writeFileSync(FILE_PATH.MODEL_JSON, JSON.stringify(mlp))
+    fs.writeFileSync(FILE_PATH.MODEL_TS, `export const model=${JSON.stringify(mlp)}`)
+
     const buffer = imgGenerator.generateDecisionBoundary(mlp, trainingSamples[0].point.length)
 
     fs.writeFileSync(FILE_PATH.WEB_DECISION_BOUNDARY_IMG, buffer)
-    fs.writeFileSync(FILE_PATH.MODEL_TS, `export const model=${JSON.stringify(mlp)}`)
 
     console.log(
       `STEP3 - Done. MLP ACCURACY: ${correctCount}/${totalCount}(${Util.formatPercent(correctCount / totalCount)})`

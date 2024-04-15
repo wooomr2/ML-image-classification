@@ -6,21 +6,22 @@ const webDir = path.join(__dirname, '../../../web')
 export const FILE_PATH = {
   DATA_DIR: dataDir,
   RAW_DIR: dataDir + '/raw',
+  MODEL_DIR: dataDir + '/model',
   DATASET_DIR: dataDir + '/dataset',
   JSON_DIR: dataDir + '/dataset/json',
   IMG_DIR: dataDir + '/dataset/img',
-  MODEL_DIR: dataDir + '/dataset/model',
+
+  MODEL_JSON: dataDir + '/model/model.json',
 
   SAMPLES_JSON: dataDir + '/dataset/samples.json',
   FEATURES_JSON: dataDir + '/dataset/features.json',
   TRAINING_JSON: dataDir + '/dataset/training.json',
   TESTING_JSON: dataDir + '/dataset/testing.json',
-  MODEL_JSON: dataDir + '/dataset/model/model.json',
 
   TRAINING_CSV: dataDir + '/dataset/training.csv',
   TESTING_CSV: dataDir + '/dataset/testing.csv',
 
-  DECISION_BOUNDARY_IMG: dataDir + '/dataset/model/decision-boundary.png',
+  DECISION_BOUNDARY_IMG: dataDir + '/model/decision-boundary.png',
 
   // web
   SAMPLES_TS: webDir + '/src/data/samples.ts',
