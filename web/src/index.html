@@ -3,19 +3,34 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, maximum-scale=0.9, user-scalable=0" />
-    <title>SketchPad</title>
+    <title>Viewer</title>
   </head>
   <body>
-    <div id="content">
-      <h1>Data Creator</h1>
-      <div>
-        <input id="studentInput" type="text" placeholder="type your name" />
-        <span id="instructions" style="display: none"></span>
-        <button id="advanceBtn">START</button>
-      </div>
-      <br />
-      <div id="sketchPadContainer" style="visibility: hidden"></div>
+    <h1>
+      Data Viewer
+      <span class="infoButton"
+        >ⓘ
+        <span class="tooltipText">
+          Flag samples: Ctrl + Click.
+          <br />
+          Then use the Console (flaggedSampleIds).
+        </span>
+      </span>
+    </h1>
+    <div id="inputContainer" style="display: none">
+      <div id="predictedContainer"></div>
     </div>
+    <div id="chartContainer">
+      <div id="confusionContainer" style="display: none"></div>
+      <canvas id="networkCanvas" style="display: none"></canvas>
+    </div>
+
+    <div id="controlPanel">
+      <button id="toggleInputButton">Toggle Input</button>
+      <button id="toggleOutputButton">Toggle Output</button>
+      <div id="statistics"></div>
+    </div>
+    <div id="container"></div>
     <script type="module" src="./scripts/index.ts"></script>
   </body>
 </html>

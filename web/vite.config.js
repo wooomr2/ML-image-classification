@@ -20,7 +20,7 @@ export default defineConfig({
     rollupOptions: {
       input: {
         index: resolve(__dirname, "./src/index.html"),
-        viewer: resolve(__dirname, "./src/viewer.html"),
+        creator: resolve(__dirname, "./src/creator.html"),
       },
       external: ["shared"],
     },

@@ -1,80 +1,196 @@
+import { Chart } from "@/chart/chart";
+import { Confusion } from "@/chart/confusion";
+import { Graphics } from "@/chart/graphics";
+import { IChartOptions } from "@/chart/types";
+import { Visualizer } from "@/chart/visualizer";
+import { createRow, toggleFlaggedSample } from "@/components/display";
 import { SketchPad } from "@/components/sketchPad";
+import { PUBLIC_SOURCE } from "@/constants";
+import { minMax } from "@/data/minMax";
+import { model } from "@/data/model";
+import { testing } from "@/data/testing";
+import { training } from "@/data/training";
 import "@/styles/style.css";
-import { IMAGE_LABELS, IRawData } from "shared";
+import {
+  Feature,
+  IMAGE_LABELS,
+  IMAGE_STYLES,
+  ISample,
+  ITestingSample,
+  MLP,
+  Path,
+  Util,
+  normalizePoints,
+} from "shared";
 
-const sketchPadContainer = document.getElementById("sketchPadContainer") as HTMLDivElement;
-const studentInput = document.getElementById("studentInput") as HTMLInputElement | null;
-const instructions = document.getElementById("instructions") as HTMLParagraphElement;
-const advanceBtn = document.getElementById("advanceBtn") as HTMLButtonElement;
+const container = document.getElementById("container") as HTMLDivElement;
+const chartContainer = document.getElementById("chartContainer") as HTMLDivElement;
+const confusionContainer = document.getElementById("confusionContainer") as HTMLDivElement;
+const inputContainer = document.getElementById("inputContainer") as HTMLDivElement;
+const predictedContainer = document.getElementById("predictedContainer") as HTMLDivElement;
+const toggleInputButton = document.getElementById("toggleInputButton") as HTMLButtonElement;
+const toggleOutputButton = document.getElementById("toggleOutputButton") as HTMLButtonElement;
+const statistics = document.getElementById("statistics") as HTMLDivElement;
+const networkCanvas = document.getElementById("networkCanvas") as HTMLCanvasElement;
 
-advanceBtn.onclick = start;
+toggleInputButton.addEventListener("click", toggleInput);
+toggleOutputButton.addEventListener("click", toggleOutput);
 
-const sketchPad = new SketchPad(sketchPadContainer);
+const featureNames = training.featureNames;
+const trainingSamples: ISample[] = training.samples;
 
-let index = 0;
-const data: IRawData = {
-  student: "",
-  session: new Date().getTime(),
-  drawings: {
-    car: [],
-    fish: [],
-    house: [],
-    tree: [],
-    bicycle: [],
-    guitar: [],
-    pencil: [],
-    clock: [],
-  },
+// const k = 50;
+// const knn = new KNN(trainingSamples, k);
+
+const mlp = new MLP([], []);
+mlp.load(model as MLP);
+
+let totalCount = 0;
+let correctCount = 0;
+
+const testingSamples: ITestingSample[] = testing.samples.map((s) => {
+  // const { label } = knn.predict(s.point);
+  const { label } = mlp.predict(s.point);
+  const isCorrect = s.label == label;
+
+  totalCount++;
+  correctCount += isCorrect ? 1 : 0;
+
+  return {
+    ...s,
+    label: label ?? "?",
+    point: s.point,
+    truth: s.label,
+    correct: isCorrect,
+  };
+});
+
+statistics.innerHTML = `<b>Accuracy:</b> ${correctCount}/${totalCount}(${Util.formatPercent(
+  correctCount / totalCount
+)})`;
+
+// display samples
+{
+  const trainingGroups = Util.groupBy(trainingSamples, "student_id");
+  for (const student_id in trainingGroups) {
+    const groupSamples = trainingGroups[student_id];
+
+    createRow(container, groupSamples[0].student_name, groupSamples, handleClick);
+  }
+
+  const subtitle = document.createElement("h2");
+  subtitle.innerHTML = "Testing Samples";
+  container.appendChild(subtitle);
+
+  const testingGroups = Util.groupBy(testingSamples, "student_id");
+  for (const student_id in testingGroups) {
+    const groupSamples = testingGroups[student_id];
+
+    createRow(container, groupSamples[0].student_name, groupSamples, handleClick);
+  }
+
+  toggleFlaggedSample();
+}
+
+const options: IChartOptions = {
+  size: 480,
+  axesLabels: featureNames,
+  styles: IMAGE_STYLES,
+  iconType: "image",
+  bgImageSrc: PUBLIC_SOURCE.DECISION_BOUNDARY,
+  transparency: 0.9,
+  hideSamples: false,
 };
 
-function start() {
-  if (!studentInput?.value) {
-    return alert("Please enter your name");
+Graphics.generateImages(options.styles);
+
+const outputLabels = Object.values(options.styles).map((style) => style.image!);
+
+networkCanvas.width = options.size;
+networkCanvas.height = options.size;
+const networkCtx = networkCanvas.getContext("2d")!;
+
+Visualizer.drawNetwork(networkCtx, mlp.network, outputLabels);
+
+const tmpCanvas = document.createElement("canvas");
+const tmpCtx = tmpCanvas.getContext("2d")!;
+tmpCanvas.style.display = "none";
+tmpCanvas.width = 20;
+tmpCanvas.height = 20;
+
+const chart = new Chart(chartContainer, trainingSamples, options, handleClick);
+const confusion = new Confusion(confusionContainer, testingSamples, [...IMAGE_LABELS], options);
+const sketchPad = new SketchPad(inputContainer, onDrawingUpdate, options.size);
+sketchPad.canvas.style.cssText += "outline:10000px solid rgba(255,255,255,0.7);";
+
+function handleClick(sample: ISample | null, doScroll = true) {
+  if (!sample) {
+    document.querySelectorAll(".emphasize").forEach((el) => el.classList.remove("emphasize"));
+    return;
   }
 
-  data.student = studentInput.value;
+  const el = document.getElementById(`sample_${sample?.id}`);
 
-  studentInput.style.display = "none";
-  sketchPadContainer.style.visibility = "visible";
+  if (el?.classList.contains("emphasize")) {
+    el.classList.remove("emphasize");
+    chart.selectSample(null);
+    return;
+  }
 
-  instructions.innerHTML = `Please draw a ${IMAGE_LABELS[index]}`;
-  instructions.style.display = "initial";
+  document.querySelectorAll(".emphasize").forEach((el) => el.classList.remove("emphasize"));
 
-  advanceBtn.innerHTML = "NEXT";
-  advanceBtn.onclick = next;
+  el?.classList.add("emphasize");
+  chart.selectSample(sample);
+  console.log(sample);
+
+  if (doScroll) {
+    el?.scrollIntoView({ behavior: "auto", block: "center" });
+  }
 }
 
-function next() {
-  if (sketchPad.paths.length == 0) {
-    return alert("Please draw something");
-  }
+function onDrawingUpdate(paths: Path[]) {
+  tmpCtx.clearRect(0, 0, tmpCanvas.width, tmpCanvas.height);
 
-  data.drawings[IMAGE_LABELS[index]] = sketchPad.paths;
-  sketchPad.reset();
+  // const point = Feature.inUse.map((f) => f.function(paths));
+  // const point = Feature.inUse.map((f) => f.function(paths, tmpCtx));
+  const point = Object.values(Feature.getPixelIntensities(paths, tmpCtx));
 
-  index++; // Move to the next label
-  if (index < IMAGE_LABELS.length) {
-    instructions.innerHTML = `Please draw a ${IMAGE_LABELS[index]}`;
+  normalizePoints([point], minMax);
+
+  // const { label, nearestSamples } = knn.predict(point);
+  const { label } = mlp.predict(point);
+  Visualizer.drawNetwork(networkCtx, mlp.network, outputLabels);
+
+  if (paths.length) {
+    predictedContainer.innerHTML = `Is it a ${label}?`;
   } else {
-    sketchPadContainer.style.visibility = "hidden";
-    instructions.innerHTML = "Thank you for participating!";
-    advanceBtn.innerHTML = "SAVE";
-    advanceBtn.onclick = save;
+    predictedContainer.innerHTML = "Draw Something!";
+  }
+
+  // chart.showDynamicPoint(point, label, nearestSamples);
+  if (inputContainer.style.display == "block") {
+    chart.showDynamicPoint(point, label, null);
   }
 }
 
-function save() {
-  advanceBtn.style.display = "none";
-  instructions.innerHTML = "data saved!";
+function toggleInput() {
+  if (inputContainer.style.display == "none") {
+    inputContainer.style.display = "block";
+    sketchPad.triggerUpdate();
+  } else {
+    inputContainer.style.display = "none";
+    chart.hideDynamicPoint();
+  }
+}
 
-  const element = document.createElement("a");
-  element.setAttribute(
-    "href",
-    "data:application/json;charset=utf-8," + encodeURIComponent(JSON.stringify(data))
-  );
-
-  const fileName = `${data.session}.json`;
-  element.setAttribute("download", fileName);
-
-  element.click();
+function toggleOutput() {
+  if (networkCanvas.style.display == "block") {
+    networkCanvas.style.display = "none";
+    confusionContainer.style.display = "block";
+  } else if (confusionContainer.style.display == "block") {
+    confusionContainer.style.display = "none";
+  } else {
+    confusionContainer.style.display = "block";
+    networkCanvas.style.display = "block";
+  }
 }
