@@ -1,5 +1,5 @@
 import { Canvas, createCanvas } from 'canvas'
-import { Draw, IClassifier, IMAGE_STYLES, KNN, MLP, Path, Polygon, TLabel, minBoundingBox } from 'shared'
+import { Draw, IClassifier, IMAGE_STYLES, Path, Polygon, TLabel, minBoundingBox } from 'shared'
 import { ML_CONSTANTS } from '../constants'
 import { printProgress } from '../utils/process.util'
 
@@ -13,9 +13,17 @@ export default class ImgGenerator {
     this.size = size
   }
 
+  setCanvasSize(size: number) {
+    this.size = size
+    this.canvas.width = size
+    this.canvas.height = size
+    this.ctx.clearRect(0, 0, size, size)
+  }
+
   generateImageBuffer(paths: Path[]): Buffer {
+    this.setCanvasSize(ML_CONSTANTS.DEFAULT_CANVAS_SIZE)
+
     const { canvas, ctx } = this
-    ctx.clearRect(0, 0, canvas.width, canvas.height)
 
     Draw.paths(ctx, paths)
 
@@ -36,8 +44,8 @@ export default class ImgGenerator {
   }
 
   generateImageBufferUsingPixels(paths: Path[]): Buffer {
+    this.setCanvasSize(ML_CONSTANTS.DEFAULT_CANVAS_SIZE)
     const { canvas, ctx } = this
-    ctx.clearRect(0, 0, canvas.width, canvas.height)
 
     const pixels = Draw.getPixels(ctx, paths)
     const size = Math.sqrt(pixels.length)
@@ -62,12 +70,9 @@ export default class ImgGenerator {
 
   generateDecisionBoundary(classifier: IClassifier, dimension = 2): Buffer {
     console.log('Generating Decision Boundary ...')
+    this.setCanvasSize(ML_CONSTANTS.DECISION_BOUNDARY_SIZE)
+
     const { canvas, ctx } = this
-
-    canvas.width = ML_CONSTANTS.DECISION_BOUNDARY_SIZE
-    canvas.height = ML_CONSTANTS.DECISION_BOUNDARY_SIZE
-
-    ctx.clearRect(0, 0, canvas.width, canvas.height)
 
     for (let x = 0; x < canvas.width; x++) {
       for (let y = 0; y < canvas.height; y++) {

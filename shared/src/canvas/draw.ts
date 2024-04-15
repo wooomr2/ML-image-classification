@@ -31,7 +31,10 @@ export class Draw {
 
   /** Draw paths and return pixel's alpha
    *  @returns pixel's alpha */
-  static getPixels = (ctx: CanvasRenderingContext2D, paths: Path[], rescaling = true, size = 400) => {
+  static getPixels = (ctx: CanvasRenderingContext2D, paths: Path[], rescaling = true) => {
+    const width = ctx.canvas.width
+    const height = ctx.canvas.height
+
     if (rescaling) {
       const points = paths.flat()
 
@@ -48,8 +51,8 @@ export class Draw {
       const newPaths = []
       for (const path of paths) {
         const newPath = path.map(p => [
-          invLerp(bounds.left, bounds.right, p[0]) * size,
-          invLerp(bounds.top, bounds.bottom, p[1]) * size,
+          invLerp(bounds.left, bounds.right, p[0]) * width,
+          invLerp(bounds.top, bounds.bottom, p[1]) * height,
         ])
         newPaths.push(newPath)
       }
@@ -59,7 +62,7 @@ export class Draw {
       Draw.paths(ctx, paths)
     }
 
-    const imgData = ctx.getImageData(0, 0, size, size)
+    const imgData = ctx.getImageData(0, 0, width, height)
 
     // [R,G,B,A, R,G,B,A ...] => [A,A, ...]
     return imgData.data.filter((_, idx) => idx % 4 == 3)

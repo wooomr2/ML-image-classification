@@ -2,14 +2,14 @@ import { NeuralNetwork } from '../network/neural-network'
 import { IClassifier, IMlpPrediction, ISample, Point } from '../types'
 
 export class MLP implements IClassifier {
-  neuronCounts: number[]
+  neuronCounts: (number | number[])[]
   classes: string[]
   network: NeuralNetwork
 
-  constructor(neuronCounts: number[], classes: string[]) {
+  constructor(neuronCounts: (number | number[])[], classes: string[]) {
     this.neuronCounts = neuronCounts
     this.classes = classes
-    this.network = new NeuralNetwork(neuronCounts)
+    this.network = new NeuralNetwork(this.neuronCounts.flat())
   }
 
   load(mlp: MLP) {
@@ -23,15 +23,13 @@ export class MLP implements IClassifier {
     let bestAccuracy = this.evaluate(samples)
 
     for (let i = 0; i < tries; i++) {
-      this.network = new NeuralNetwork(this.neuronCounts)
+      this.network = new NeuralNetwork(this.neuronCounts.flat())
       const accuracy = this.evaluate(samples)
 
       if (accuracy > bestAccuracy) {
         bestAccuracy = accuracy
         bestNetwork = this.network
       }
-
-      console.log(bestAccuracy, accuracy)
     }
 
     this.network = bestNetwork

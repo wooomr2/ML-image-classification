@@ -102,10 +102,11 @@ export default class MLCron {
 
       const paths = JSON.parse(data) as Path[]
 
-      imgGenerator.ctx.clearRect(0, 0, imgGenerator.size, imgGenerator.size)
+      imgGenerator.setCanvasSize(20)
 
-      sample.point = Feature.inUse.map(f => f.function(paths, imgGenerator.ctx))
       // sample.point = Feature.inUse.map(f => f.function(paths))
+      // sample.point = Feature.inUse.map(f => f.function(paths, imgGenerator.ctx))
+      sample.point = Object.values(Feature.getPixelIntensities(paths, imgGenerator.ctx))
 
       printProgress(i, samples.length - 1)
     }
@@ -131,7 +132,8 @@ export default class MLCron {
       minMax
     )
 
-    const featureNames = Feature.inUse.map(f => f.name)
+    // const featureNames = Feature.inUse.map(f => f.name)
+    const featureNames = Array(samples[0].point.length).fill(' ')
 
     // const features = JSON.stringify({ featureNames: featureNames, samples: samples })
     const training = JSON.stringify({ featureNames: featureNames, samples: trainingSamples })
@@ -210,8 +212,6 @@ export default class MLCron {
       const loaded = JSON.parse(fs.readFileSync(FILE_PATH.MODEL_JSON, { encoding: 'utf-8' }))
       mlp.load(loaded as MLP)
     }
-
-    console.log(JSON.stringify(mlp))
 
     mlp.fit(trainingSamples, ML_CONSTANTS.MLP_TRY_CNT)
 

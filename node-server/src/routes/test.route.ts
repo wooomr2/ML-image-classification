@@ -34,5 +34,4 @@ router.get('/evaluate/mlp', async (req: Request, res: Response, next: NextFuncti
   return res.json({ message: 'MLP evaluation DONE' })
 })
 
-
 export default router

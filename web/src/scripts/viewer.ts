@@ -2,9 +2,9 @@ import { Chart } from "@/chart/chart";
 import { Confusion } from "@/chart/confusion";
 import { Graphics } from "@/chart/graphics";
 import { IChartOptions } from "@/chart/types";
+import { Visualizer } from "@/chart/visualizer";
 import { createRow, toggleFlaggedSample } from "@/components/display";
 import { SketchPad } from "@/components/sketchPad";
-import { Visualizer } from "@/chart/visualizer";
 import { PUBLIC_SOURCE } from "@/constants";
 import { minMax } from "@/data/minMax";
 import { model } from "@/data/model";
@@ -115,8 +115,8 @@ Visualizer.drawNetwork(networkCtx, mlp.network, outputLabels);
 const tmpCanvas = document.createElement("canvas");
 const tmpCtx = tmpCanvas.getContext("2d")!;
 tmpCanvas.style.display = "none";
-tmpCanvas.width = options.size;
-tmpCanvas.height = options.size;
+tmpCanvas.width = 20;
+tmpCanvas.height = 20;
 
 const chart = new Chart(chartContainer, trainingSamples, options, handleClick);
 const confusion = new Confusion(confusionContainer, testingSamples, [...IMAGE_LABELS], options);
@@ -150,8 +150,10 @@ function handleClick(sample: ISample | null, doScroll = true) {
 
 function onDrawingUpdate(paths: Path[]) {
   tmpCtx.clearRect(0, 0, tmpCanvas.width, tmpCanvas.height);
-  const point = Feature.inUse.map((f) => f.function(paths, tmpCtx));
+
   // const point = Feature.inUse.map((f) => f.function(paths));
+  // const point = Feature.inUse.map((f) => f.function(paths, tmpCtx));
+  const point = Object.values(Feature.getPixelIntensities(paths, tmpCtx));
 
   normalizePoints([point], minMax);
 

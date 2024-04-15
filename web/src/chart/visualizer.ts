@@ -49,7 +49,7 @@ export class Visualizer {
   ) {
     const right = left + width;
     const bottom = top + height;
-    const nodeRadius = 18;
+
     const { inputs, outputs, weights, biases } = level;
 
     // line
@@ -62,51 +62,65 @@ export class Visualizer {
         ctx.moveTo(xi, bottom);
         ctx.lineTo(xj, top);
         ctx.lineWidth = 2;
-        ctx.strokeStyle = Util.getRGBA(weights[i][j]);
+        ctx.strokeStyle = Util.getRGBA(weights[i][j] * inputs[i]);
         ctx.stroke();
       }
     }
+
+    const THRESHOLD = 10;
+    const NODE_RADIUS = 22;
+    const SMALL_NODE_RADIUS = 3;
+
+    const INPUT_NODE_RADIUS = inputs.length > THRESHOLD ? SMALL_NODE_RADIUS : NODE_RADIUS;
+    const OUPUT_NODE_RADIUS = outputs.length > THRESHOLD ? SMALL_NODE_RADIUS : NODE_RADIUS;
 
     // input node
     for (let i = 0; i < inputs.length; i++) {
       const x = Visualizer.#getNodeX(inputs, i, left, right);
 
       ctx.beginPath();
-      ctx.arc(x, bottom, nodeRadius, 0, Math.PI * 2);
-      ctx.fillStyle = "black";
+      ctx.arc(x, bottom, INPUT_NODE_RADIUS * 0.6, 0, Math.PI * 2);
+      ctx.fillStyle = Util.getRGBA(inputs[i]);
       ctx.fill();
+    }
+
+    for (let i = 0; i < inputs.length; i++) {
+      const x = Visualizer.#getNodeX(inputs, i, left, right);
 
       ctx.beginPath();
-      ctx.arc(x, bottom, nodeRadius * 0.6, 0, Math.PI * 2);
+      ctx.arc(x, bottom, INPUT_NODE_RADIUS * 0.6, 0, Math.PI * 2);
       ctx.fillStyle = Util.getRGBA(inputs[i]);
+      ctx.fill();
+    }
+
+    // output node
+    for (let i = 0; i < outputs.length; i++) {
+      const x = Visualizer.#getNodeX(outputs, i, left, right);
+      ctx.beginPath();
+      ctx.arc(x, top, OUPUT_NODE_RADIUS, 0, Math.PI * 2);
+      ctx.fillStyle = "black";
       ctx.fill();
     }
 
     for (let i = 0; i < outputs.length; i++) {
       const x = Visualizer.#getNodeX(outputs, i, left, right);
 
-      // ouput node
       ctx.beginPath();
-      ctx.arc(x, top, nodeRadius * 0.6, 0, Math.PI * 2);
-      ctx.fillStyle = "black";
-      ctx.fill();
-
-      ctx.beginPath();
-      ctx.arc(x, top, nodeRadius * 0.6, 0, Math.PI * 2);
+      ctx.arc(x, top, OUPUT_NODE_RADIUS * 0.6, 0, Math.PI * 2);
       ctx.fillStyle = Util.getRGBA(outputs[i]);
       ctx.fill();
 
       // bias
       ctx.beginPath();
       ctx.lineWidth = 2;
-      ctx.arc(x, top, nodeRadius * 0.8, 0, Math.PI * 2);
+      ctx.arc(x, top, OUPUT_NODE_RADIUS * 0.8, 0, Math.PI * 2);
       ctx.strokeStyle = Util.getRGBA(biases[i]);
       ctx.setLineDash([3, 3]);
       ctx.stroke();
       ctx.setLineDash([]);
 
       if (outputLabels[i]) {
-        const size = nodeRadius * 1.2;
+        const size = OUPUT_NODE_RADIUS * 1.2;
 
         ctx.drawImage(outputLabels[i], x - size / 2, top - size / 2 + size * 0.04, size, size);
       }

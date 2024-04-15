@@ -66,3 +66,10 @@ export const inUse = [
   { name: 'Roundness', function: getRoundness },
   { name: 'Complexity', function: getComplexity },
 ]
+
+/** pixel intensities (a feature vector with 20*20=400 dimensions) */
+export const getPixelIntensities = (paths: Path[], ctx: CanvasRenderingContext2D) => {
+  const pixels = Draw.getPixels(ctx, paths, true)
+
+  return pixels
+}

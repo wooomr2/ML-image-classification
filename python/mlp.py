@@ -3,7 +3,7 @@ import json
 from helpers import readFeatureFile
 from sklearn.neural_network import MLPClassifier
 
-hidden = (10)
+hidden = (10, 10, 10)
 mlp = MLPClassifier(
     hidden,
     max_iter=10000,
