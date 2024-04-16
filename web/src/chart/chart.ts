@@ -70,7 +70,7 @@ export class Chart {
     this.canvas.height = options.size;
     this.canvas.setAttribute("style", "background-color: white;");
 
-    this.ctx = this.canvas.getContext("2d")!;
+    this.ctx = this.canvas.getContext("2d", { willReadFrequently: true })!;
     this.ctx.imageSmoothingEnabled = false;
 
     container.appendChild(this.canvas);
@@ -84,7 +84,7 @@ export class Chart {
     this.overlayCanvas.style.pointerEvents = "none";
     container.appendChild(this.overlayCanvas);
 
-    this.overlayCtx = this.overlayCanvas.getContext("2d")!;
+    this.overlayCtx = this.overlayCanvas.getContext("2d", { willReadFrequently: true })!;
     this.overlayCtx.imageSmoothingEnabled = false;
 
     this.margin = options.size * 0.1;

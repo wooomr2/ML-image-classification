@@ -108,12 +108,12 @@ const outputLabels = Object.values(options.styles).map((style) => style.image!);
 
 networkCanvas.width = options.size;
 networkCanvas.height = options.size;
-const networkCtx = networkCanvas.getContext("2d")!;
+const networkCtx = networkCanvas.getContext("2d", { willReadFrequently: true })!;
 
 Visualizer.drawNetwork(networkCtx, mlp.network, outputLabels);
 
 const tmpCanvas = document.createElement("canvas");
-const tmpCtx = tmpCanvas.getContext("2d")!;
+const tmpCtx = tmpCanvas.getContext("2d", { willReadFrequently: true })!;
 tmpCanvas.style.display = "none";
 tmpCanvas.width = 20;
 tmpCanvas.height = 20;

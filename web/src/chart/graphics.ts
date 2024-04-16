@@ -9,7 +9,7 @@ export class Graphics {
       canvas.width = size + 10;
       canvas.height = size + 10;
 
-      const ctx = canvas.getContext("2d")!;
+      const ctx = canvas.getContext("2d", { willReadFrequently: true })!;
       ctx.beginPath();
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";

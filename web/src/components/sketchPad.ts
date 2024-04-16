@@ -26,7 +26,7 @@ export class SketchPad {
     this.canvas.style.boxShadow = "0px 0px 10px 2px black";
     this.canvas.style.filter = "invert(1)";
 
-    this.ctx = this.canvas.getContext("2d")!;
+    this.ctx = this.canvas.getContext("2d", { willReadFrequently: true })!;
 
     container.appendChild(this.canvas);
     const lineBreak = document.createElement("br");
